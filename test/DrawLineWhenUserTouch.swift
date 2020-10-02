@@ -110,7 +110,7 @@ class DrawLineWhenUserTouch: UIView {
                     print("hit: ",layer)
                     startPointOfTouchedRuler = detectWhichRuler(layer: layer)
                     if startPointOfTouchedRuler != zeroPoint{
-                        drawCircle(point: startPointOfTouchedRuler)
+                        //  drawCircle(point: startPointOfTouchedRuler)
                         print("draw a circle")
                         break
                     }else{
@@ -120,38 +120,65 @@ class DrawLineWhenUserTouch: UIView {
             }
         }
         
+        var tempStartCircle:CAShapeLayer = CAShapeLayer()
+        
+//
         switch longTapRecognizer.state {
         case .began:
             tapGestureStartPoint = startPointOfTouchedRuler
             if tapGestureStartPoint == zeroPoint {return}
+            tempStartCircle = drawCircle(point: startPointOfTouchedRuler)
             self.layer.addSublayer(lineShape)
+            self.layer.addSublayer(shapeLayer1)
         case .changed:
             let linePath = UIBezierPath()
             linePath.move(to: tapGestureStartPoint)
             linePath.addLine(to: currentPanPoint)
-            
+            let circlePath = UIBezierPath(arcCenter: currentPanPoint, radius: 15.0, startAngle: CGFloat(0), endAngle: CGFloat(Double.pi * 2.0), clockwise: true)
+            shapeLayer1.path = circlePath.cgPath
+            circlePath.move(to: tapGestureStartPoint)
             lineShape.path = linePath.cgPath
         case .ended:
             lineShape.path = nil
+            shapeLayer1.path = nil
             lineShape.removeFromSuperlayer()
+            shapeLayer1.removeFromSuperlayer()
+            tempStartCircle.removeFromSuperlayer()
             if tapGestureStartPoint == zeroPoint {return}
-
-            drawLineFromPoint(start: tapGestureStartPoint, toPoint: currentPanPoint, ofColor: .red, inView: self)
+            extendALine(startPoint: tapGestureStartPoint, currentPoint: currentPanPoint)
+         //   drawLineFromPoint(start: tapGestureStartPoint, toPoint: currentPanPoint, ofColor: .red, inView: self)
             print("ended")
         default: print("default")
             break
         }
         
     }
+    //------------------Transform---------------------
+    
+
+    
+
     
     
+    //------------------Transform---------------------
+    
+    let shapeLayer1: CAShapeLayer = {
+        let shapeLayer:CAShapeLayer = CAShapeLayer()
+        shapeLayer.fillColor = UIColor.red.cgColor
+        shapeLayer.strokeColor = UIColor.red.cgColor
+        shapeLayer.opacity = 0.5
+        return shapeLayer
+    }()
+    let circlePath:UIBezierPath = UIBezierPath()
     
     private lazy var lineShape: CAShapeLayer = {
         let lineShape = CAShapeLayer()
         lineShape.strokeColor = UIColor.red.cgColor
-        lineShape.lineWidth = 2.0
+        lineShape.lineWidth = 5.0
         return lineShape
     }()
+    
+    
     var bezierPathArray:[bezierPathStruct] = [bezierPathStruct]()
     
     func detectWhichRuler(layer: CAShapeLayer)->CGPoint{
@@ -184,7 +211,20 @@ extension DrawLineWhenUserTouch{
     
     
     func extendALine(startPoint:CGPoint, currentPoint:CGPoint){
+        let endPoint = startPoint
+        let startPoint = currentPoint
+        dotStartPointX = CGPoint(x: startPoint.x, y: startPoint.y - dotLineSize)
+        dotStartPointY = CGPoint(x: startPoint.x, y: startPoint.y + dotLineSize)
+        dotEndPointX = CGPoint(x: endPoint.x, y: endPoint.y - dotLineSize)
+        dotEndPointY = CGPoint(x: endPoint.x, y: endPoint.y + dotLineSize)
         
+        let path = drawLineFromPoint(start: startPoint, toPoint: endPoint, ofColor: fillColor, inView: self)
+        let dotStart = drawLineFromPoint(start: dotStartPointX!, toPoint: dotStartPointY!, ofColor: fillColor, inView: self)
+        let dotEnd = drawLineFromPoint(start: dotEndPointX!, toPoint: dotEndPointY!, ofColor: fillColor, inView: self)
+        let circleStart = drawCircle(point: startPoint)
+        let circleEnd = drawCircle(point: endPoint)
+        let newPath:bezierPathStruct = bezierPathStruct(startPoint: startPoint, endPoint: endPoint, dotStartPointX: dotStartPointX!, dotStartPointY: dotStartPointY!, dotEndPointX: dotEndPointX!, dotEndPointY: dotEndPointY!, path: path, dotStart: dotStart, dotEnd: dotEnd, circleStart: circleStart, circleEnd:circleEnd)
+        bezierPathArray.append(newPath)
     }
     
     func drawWholeRuler(originalPoint:CGPoint){ //Draw a whole ruler with every components
