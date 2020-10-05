@@ -32,8 +32,8 @@ class ViewController: UIViewController {
         DrawLineUserTouch.translatesAutoresizingMaskIntoConstraints = false
         DrawLineUserTouch.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         DrawLineUserTouch.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        DrawLineUserTouch.heightAnchor.constraint(equalToConstant: view.frame.height*0.8).isActive = true
-        DrawLineUserTouch.widthAnchor.constraint(equalToConstant: view.frame.width*0.8).isActive = true
+        DrawLineUserTouch.heightAnchor.constraint(equalToConstant: view.frame.height).isActive = true
+        DrawLineUserTouch.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
     }
     
     

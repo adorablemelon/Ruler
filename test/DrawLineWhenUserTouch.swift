@@ -99,6 +99,9 @@ class DrawLineWhenUserTouch: UIView {
         
     }
     
+    var shouldDeleteRuler:Bool = true
+    
+    
     @objc func handleLongPress(recognizer: UIGestureRecognizer) {
         var startPointOfTouchedRuler:CGPoint = .zero
         let zeroPoint:CGPoint = .zero
@@ -119,35 +122,44 @@ class DrawLineWhenUserTouch: UIView {
                 }
             }
         }
-        
-        var tempStartCircle:CAShapeLayer = CAShapeLayer()
-        
-//
+        let linePath = UIBezierPath()
+        var circlePath = UIBezierPath()
+        var circlePath2 = UIBezierPath()
         switch longTapRecognizer.state {
         case .began:
             tapGestureStartPoint = startPointOfTouchedRuler
             if tapGestureStartPoint == zeroPoint {return}
-            tempStartCircle = drawCircle(point: startPointOfTouchedRuler)
             self.layer.addSublayer(lineShape)
             self.layer.addSublayer(shapeLayer1)
-        case .changed:
-            let linePath = UIBezierPath()
+            self.layer.addSublayer(shapeLayer2)
+            
             linePath.move(to: tapGestureStartPoint)
             linePath.addLine(to: currentPanPoint)
-            let circlePath = UIBezierPath(arcCenter: currentPanPoint, radius: 15.0, startAngle: CGFloat(0), endAngle: CGFloat(Double.pi * 2.0), clockwise: true)
+            circlePath = UIBezierPath(arcCenter: currentPanPoint, radius: 15.0, startAngle: CGFloat(0), endAngle: CGFloat(Double.pi * 2.0), clockwise: true)
+            circlePath2 = UIBezierPath(arcCenter: startPointOfTouchedRuler, radius: 15.0, startAngle: CGFloat(0), endAngle: CGFloat(Double.pi * 2.0), clockwise: true)
+            shapeLayer2.path = circlePath2.cgPath
+            shapeLayer1.path = circlePath.cgPath
+            lineShape.path = linePath.cgPath
+            
+        case .changed:
+            linePath.move(to: tapGestureStartPoint)
+            linePath.addLine(to: currentPanPoint)
+            circlePath = UIBezierPath(arcCenter: currentPanPoint, radius: 15.0, startAngle: CGFloat(0), endAngle: CGFloat(Double.pi * 2.0), clockwise: true)
             shapeLayer1.path = circlePath.cgPath
             circlePath.move(to: tapGestureStartPoint)
             lineShape.path = linePath.cgPath
         case .ended:
+            shapeLayer2.path = nil
+            shapeLayer2.removeFromSuperlayer()
             lineShape.path = nil
             shapeLayer1.path = nil
             lineShape.removeFromSuperlayer()
             shapeLayer1.removeFromSuperlayer()
-            tempStartCircle.removeFromSuperlayer()
             if tapGestureStartPoint == zeroPoint {return}
             extendALine(startPoint: tapGestureStartPoint, currentPoint: currentPanPoint)
          //   drawLineFromPoint(start: tapGestureStartPoint, toPoint: currentPanPoint, ofColor: .red, inView: self)
             print("ended")
+            shouldDeleteRuler = true
         default: print("default")
             break
         }
@@ -169,8 +181,14 @@ class DrawLineWhenUserTouch: UIView {
         shapeLayer.opacity = 0.5
         return shapeLayer
     }()
-    let circlePath:UIBezierPath = UIBezierPath()
     
+    let shapeLayer2: CAShapeLayer = {
+        let shapeLayer:CAShapeLayer = CAShapeLayer()
+        shapeLayer.fillColor = UIColor.red.cgColor
+        shapeLayer.strokeColor = UIColor.red.cgColor
+        shapeLayer.opacity = 0.5
+        return shapeLayer
+    }()
     private lazy var lineShape: CAShapeLayer = {
         let lineShape = CAShapeLayer()
         lineShape.strokeColor = UIColor.red.cgColor
@@ -191,9 +209,12 @@ class DrawLineWhenUserTouch: UIView {
                     }else{
                         newRulerStartPoint = path.endPoint!
                     }
-                    path.deleteRuler()
-                    bezierPathArray.remove(at: index)
-                    print(bezierPathArray.count)
+                    if shouldDeleteRuler {
+                        path.deleteRuler()
+                        bezierPathArray.remove(at: index)
+                        shouldDeleteRuler = false
+                    }
+                    
                 }
             }
         }
