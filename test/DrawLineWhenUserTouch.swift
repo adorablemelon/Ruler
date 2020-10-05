@@ -130,6 +130,7 @@ class DrawLineWhenUserTouch: UIView {
             tempStartCircle = drawCircle(point: startPointOfTouchedRuler)
             self.layer.addSublayer(lineShape)
             self.layer.addSublayer(shapeLayer1)
+            print(shapeLayer1)
         case .changed:
             let linePath = UIBezierPath()
             linePath.move(to: tapGestureStartPoint)
@@ -141,12 +142,12 @@ class DrawLineWhenUserTouch: UIView {
         case .ended:
             lineShape.path = nil
             shapeLayer1.path = nil
+            tempStartCircle.path = nil
             lineShape.removeFromSuperlayer()
             shapeLayer1.removeFromSuperlayer()
             tempStartCircle.removeFromSuperlayer()
             if tapGestureStartPoint == zeroPoint {return}
             extendALine(startPoint: tapGestureStartPoint, currentPoint: currentPanPoint)
-         //   drawLineFromPoint(start: tapGestureStartPoint, toPoint: currentPanPoint, ofColor: .red, inView: self)
             print("ended")
         default: print("default")
             break
