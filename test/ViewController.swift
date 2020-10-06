@@ -28,7 +28,6 @@ class ViewController: UIViewController {
         let logoutBarButtonItem = UIBarButtonItem(title: "Logout", style: .done, target: self, action: nil)
         self.navigationItem.rightBarButtonItem  = logoutBarButtonItem
         view.addSubview(DrawLineUserTouch)
-
         DrawLineUserTouch.translatesAutoresizingMaskIntoConstraints = false
         DrawLineUserTouch.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         DrawLineUserTouch.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
