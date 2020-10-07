@@ -43,6 +43,7 @@ class DrawLineWhenUserTouch: UIView {
     var dotEndPointX:CGPoint?
     var dotEndPointY:CGPoint?
     struct bezierPathStruct{
+        var angle:CGFloat
         var startPoint:CGPoint?
         var endPoint:CGPoint?
         var dotStartPointX:CGPoint?
@@ -56,7 +57,7 @@ class DrawLineWhenUserTouch: UIView {
         var circleEnd:CAShapeLayer?
         var arrayShapeLayer:[CAShapeLayer] = [CAShapeLayer]()
         
-        init(startPoint:CGPoint, endPoint:CGPoint, dotStartPointX:CGPoint, dotStartPointY:CGPoint, dotEndPointX:CGPoint, dotEndPointY:CGPoint, path:CAShapeLayer, dotStart:CAShapeLayer, dotEnd:CAShapeLayer, circleStart:CAShapeLayer, circleEnd:CAShapeLayer) {
+        init(startPoint:CGPoint, endPoint:CGPoint, dotStartPointX:CGPoint, dotStartPointY:CGPoint, dotEndPointX:CGPoint, dotEndPointY:CGPoint, path:CAShapeLayer, dotStart:CAShapeLayer, dotEnd:CAShapeLayer, circleStart:CAShapeLayer, circleEnd:CAShapeLayer, angle:CGFloat) {
             self.startPoint = startPoint
             self.endPoint = endPoint
             self.dotEndPointY = dotEndPointY
@@ -68,7 +69,9 @@ class DrawLineWhenUserTouch: UIView {
             self.dotEnd = dotEnd
             self.circleEnd = circleEnd
             self.circleStart = circleStart
+            self.angle = angle
             arrayShapeLayer.append(contentsOf: [path,dotEnd,dotStart,circleStart,circleEnd])
+            
             
         }
         
@@ -115,23 +118,20 @@ class DrawLineWhenUserTouch: UIView {
     
     var shouldDeleteRuler:Bool = true
     
-    
     @objc func handleLongPress(recognizer: UIGestureRecognizer) {
         var startPointOfTouchedRuler:CGPoint = .zero
         let zeroPoint:CGPoint = .zero
         
         let currentPanPoint = longTapRecognizer.location(in: self)
+       // print("here",currentPanPoint)
         if let sublayers = self.layer.sublayers as? [CAShapeLayer]{ //get all CAShape and stored as an array
             for layer in sublayers{ // go through each CAShape
                 if let path = layer.path, path.contains(currentPanPoint) { // if there is a path at that point then return, else create a path
-                    print("hit: ",layer)
                     startPointOfTouchedRuler = detectWhichRuler(layer: layer)
                     if startPointOfTouchedRuler != zeroPoint{
                         //  drawCircle(point: startPointOfTouchedRuler)
-                        print("draw a circle")
                         break
                     }else{
-                        print("a")
                     }
                 }
             }
@@ -152,14 +152,14 @@ class DrawLineWhenUserTouch: UIView {
             self.layer.addSublayer(shapeLayer2)
             self.layer.addSublayer(verticalLineShape)
             self.layer.addSublayer(verticalLineShape2)
-            //dotStartPointX = CGPoint(x: startPoint.x, y: startPoint.y - dotLineSize)
-            print("startpoint",startPointOfTouchedRuler)
+            shapeLayer1.anchorPoint = startPointOfTouchedRuler
+      
             verticalLinePath1.move(to: CGPoint(x: startPointOfTouchedRuler.x, y: startPointOfTouchedRuler.y - dotLineSize ))
             verticalLinePath1.addLine(to: CGPoint(x: startPointOfTouchedRuler.x  , y: startPointOfTouchedRuler.y + dotLineSize))
-            print("+20",startPointOfTouchedRuler.x + 20)
             
             verticalLinePath2.move(to: CGPoint(x: currentPanPoint.x, y: currentPanPoint.y - dotLineSize))
             verticalLinePath2.addLine(to: CGPoint(x: currentPanPoint.x, y: currentPanPoint.y + dotLineSize))
+            
             verticalLineShape.path = verticalLinePath1.cgPath
             verticalLineShape2.path = verticalLinePath2.cgPath
 
@@ -170,23 +170,21 @@ class DrawLineWhenUserTouch: UIView {
             shapeLayer2.path = circlePath2.cgPath
             shapeLayer1.path = circlePath.cgPath
             lineShape.path = linePath.cgPath
-           // var t:CATransform3D = CATransform3DIdentity
-          
-//            let current: CATransform3D = verticalLineShape.transform
-//            verticalLineShape.transform = CATransform3DRotate(current, .pi/2, 0, 1.0, 0);
-//            verticalLineShape.transform = CATransform3DMakeRotation(60.0 / 180.0 * .pi, 0.0, 0.0, 1.0)
-//            print(verticalLineShape.x)
-
-           // verticalLineShape.rotate(degrees: 30)
             
-
         case .changed:
-//            verticalLinePath1.move(to: CGPoint(x: startPointOfTouchedRuler.x, y: startPointOfTouchedRuler.y - dotLineSize))
-//            verticalLinePath1.addLine(to: CGPoint(x: startPointOfTouchedRuler.x, y: startPointOfTouchedRuler.y + dotLineSize))
-//            verticalLineShape.path = verticalLinePath1.cgPath
-            verticalLinePath2.move(to: CGPoint(x: currentPanPoint.x, y: currentPanPoint.y - dotLineSize))
-            verticalLinePath2.addLine(to: CGPoint(x: currentPanPoint.x, y: currentPanPoint.y + dotLineSize))
             
+            let centerPoint = currentDraggedPointNailed!
+            let tempAngle = atan2(currentPanPoint.y - centerPoint.y, currentPanPoint.x - centerPoint.x)
+            verticalLinePath1.move(to: CGPoint(x: currentDraggedPointNailed!.x, y: currentDraggedPointNailed!.y - dotLineSize ))
+            verticalLinePath1.addLine(to: CGPoint(x: currentDraggedPointNailed!.x  , y: currentDraggedPointNailed!.y + dotLineSize))
+            verticalLinePath1.rotate(path: verticalLinePath1, angle:tempAngle)
+            verticalLineShape.path = verticalLinePath1.cgPath
+            
+//
+            verticalLinePath2.move(to: CGPoint(x: currentPanPoint.x , y: currentPanPoint.y - dotLineSize))
+            verticalLinePath2.addLine(to: CGPoint(x: currentPanPoint.x, y: currentPanPoint.y + dotLineSize))
+            verticalLinePath2.rotate(path: verticalLinePath2, angle: tempAngle)
+
             verticalLineShape2.path = verticalLinePath2.cgPath
 
             linePath.move(to: tapGestureStartPoint)
@@ -196,6 +194,8 @@ class DrawLineWhenUserTouch: UIView {
             circlePath.move(to: tapGestureStartPoint)
             lineShape.path = linePath.cgPath
             
+            self.angle = tempAngle
+        
         case .ended:
             verticalLineShape.path = nil
             verticalLineShape2.path = nil
@@ -209,10 +209,10 @@ class DrawLineWhenUserTouch: UIView {
             lineShape.removeFromSuperlayer()
             shapeLayer1.removeFromSuperlayer()
             if tapGestureStartPoint == zeroPoint {return}
-            extendALine(startPoint: tapGestureStartPoint, currentPoint: currentPanPoint)
+            extendALine(startPoint: tapGestureStartPoint, currentPoint: currentPanPoint, angle: angle!)
          //   drawLineFromPoint(start: tapGestureStartPoint, toPoint: currentPanPoint, ofColor: .red, inView: self)
-            print("ended")
             shouldDeleteRuler = true
+            currentDraggedPointNailed = .zero
         default: print("default")
             break
         }
@@ -272,10 +272,15 @@ class DrawLineWhenUserTouch: UIView {
                 if layer == shape {
                     if layer == path.circleEnd{
                         newRulerStartPoint = path.startPoint!
+                        currentDraggedPointNailed = path.startPoint!
+                        originalDraggingPoint = path.endPoint!
                     }else{
                         newRulerStartPoint = path.endPoint!
+                        currentDraggedPointNailed = path.endPoint!
+                        originalDraggingPoint = path.startPoint!
                     }
                     if shouldDeleteRuler {
+                        print("deleted")
                         path.deleteRuler()
                         bezierPathArray.remove(at: index)
                         shouldDeleteRuler = false
@@ -289,15 +294,16 @@ class DrawLineWhenUserTouch: UIView {
     
     ///PanGesture
     
-    
-    
+    var currentDraggedPointNailed:CGPoint?
+    var originalDraggingPoint:CGPoint?
+    var angle:CGFloat?
 }
 
 extension DrawLineWhenUserTouch{
     
     
     
-    func extendALine(startPoint:CGPoint, currentPoint:CGPoint){
+    func extendALine(startPoint:CGPoint, currentPoint:CGPoint, angle: CGFloat){
         let endPoint = startPoint
         let startPoint = currentPoint
         dotStartPointX = CGPoint(x: startPoint.x, y: startPoint.y - dotLineSize)
@@ -305,12 +311,13 @@ extension DrawLineWhenUserTouch{
         dotEndPointX = CGPoint(x: endPoint.x, y: endPoint.y - dotLineSize)
         dotEndPointY = CGPoint(x: endPoint.x, y: endPoint.y + dotLineSize)
         
-        let path = drawLineFromPoint(start: startPoint, toPoint: endPoint, ofColor: fillColor, inView: self)
-        let dotStart = drawLineFromPoint(start: dotStartPointX!, toPoint: dotStartPointY!, ofColor: fillColor, inView: self)
-        let dotEnd = drawLineFromPoint(start: dotEndPointX!, toPoint: dotEndPointY!, ofColor: fillColor, inView: self)
+        let path = drawLineFromPoint(start: startPoint, toPoint: endPoint, ofColor: fillColor, angle: 0, inView: self)
+        let dotStart = drawLineFromPoint(start: dotStartPointX!, toPoint: dotStartPointY!, ofColor: fillColor, angle: angle, inView: self)
+        let dotEnd = drawLineFromPoint(start: dotEndPointX!, toPoint: dotEndPointY!, ofColor: fillColor, angle: angle, inView: self)
         let circleStart = drawCircle(point: startPoint)
         let circleEnd = drawCircle(point: endPoint)
-        let newPath:bezierPathStruct = bezierPathStruct(startPoint: startPoint, endPoint: endPoint, dotStartPointX: dotStartPointX!, dotStartPointY: dotStartPointY!, dotEndPointX: dotEndPointX!, dotEndPointY: dotEndPointY!, path: path, dotStart: dotStart, dotEnd: dotEnd, circleStart: circleStart, circleEnd:circleEnd)
+        let newPath:bezierPathStruct = bezierPathStruct(startPoint: startPoint, endPoint: endPoint, dotStartPointX: dotStartPointX!, dotStartPointY: dotStartPointY!, dotEndPointX: dotEndPointX!, dotEndPointY: dotEndPointY!, path: path, dotStart: dotStart, dotEnd: dotEnd, circleStart: circleStart, circleEnd:circleEnd, angle: angle)
+        
         bezierPathArray.append(newPath)
     }
     
@@ -323,16 +330,16 @@ extension DrawLineWhenUserTouch{
         dotEndPointX = CGPoint(x: endPoint!.x, y: endPoint!.y - dotLineSize)
         dotEndPointY = CGPoint(x: endPoint!.x, y: endPoint!.y + dotLineSize)
         
-        let path = drawLineFromPoint(start: startPoint!, toPoint: endPoint!, ofColor: fillColor, inView: self)
+        let path = drawLineFromPoint(start: startPoint!, toPoint: endPoint!, ofColor: fillColor, angle: 0, inView: self)
         
         
-        let dotStart = drawLineFromPoint(start: dotStartPointX!, toPoint: dotStartPointY!, ofColor: fillColor, inView: self)
-        let dotEnd = drawLineFromPoint(start: dotEndPointX!, toPoint: dotEndPointY!, ofColor: fillColor, inView: self)
+        let dotStart = drawLineFromPoint(start: dotStartPointX!, toPoint: dotStartPointY!, ofColor: fillColor, angle: 0, inView: self)
+        let dotEnd = drawLineFromPoint(start: dotEndPointX!, toPoint: dotEndPointY!, ofColor: fillColor, angle: 0, inView: self)
         
         
         let circleStart = drawCircle(point: startPoint!)
         let circleEnd = drawCircle(point: endPoint!)
-        let newPath:bezierPathStruct = bezierPathStruct(startPoint: startPoint!, endPoint: endPoint!, dotStartPointX: dotStartPointX!, dotStartPointY: dotStartPointY!, dotEndPointX: dotEndPointX!, dotEndPointY: dotEndPointY!, path: path, dotStart: dotStart, dotEnd: dotEnd, circleStart: circleStart, circleEnd:circleEnd)
+        let newPath:bezierPathStruct = bezierPathStruct(startPoint: startPoint!, endPoint: endPoint!, dotStartPointX: dotStartPointX!, dotStartPointY: dotStartPointY!, dotEndPointX: dotEndPointX!, dotEndPointY: dotEndPointY!, path: path, dotStart: dotStart, dotEnd: dotEnd, circleStart: circleStart, circleEnd:circleEnd, angle: 0.0)
         bezierPathArray.append(newPath)
     }
     
@@ -348,13 +355,13 @@ extension DrawLineWhenUserTouch{
         self.layer.addSublayer(shapeLayer)
         return shapeLayer
     }
-    func drawLineFromPoint(start : CGPoint, toPoint end:CGPoint, ofColor lineColor: UIColor, inView view:UIView) ->CAShapeLayer { //draw a straight line component
+    func drawLineFromPoint(start : CGPoint, toPoint end:CGPoint, ofColor lineColor: UIColor,angle:CGFloat, inView view:UIView) ->CAShapeLayer { //draw a straight line component
         
         //design the path
         let path = UIBezierPath()
         path.move(to: start)
         path.addLine(to: end)
-        
+        path.rotate(path: path, angle: angle)
         //design path in layerr
         let shapeLayer = CAShapeLayer()
         shapeLayer.path = path.cgPath
@@ -369,6 +376,9 @@ extension DrawLineWhenUserTouch{
     func clearAll(){
         
     }
+    
+   
 }
+
 
 

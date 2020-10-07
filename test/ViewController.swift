@@ -52,6 +52,7 @@ class ViewController: UIViewController {
             lineShape.path = linePath.cgPath
         case .ended:
             lineShape.path = nil
+            
             lineShape.removeFromSuperlayer()
         default: break
         }
