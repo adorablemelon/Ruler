@@ -31,3 +31,16 @@ extension UIBezierPath {
     }
     
 }
+extension UIView{
+    func distanceFromTwoPoints(_ a: CGPoint, _ b: CGPoint) -> CGFloat {
+        let xDist = a.x - b.x
+        let yDist = a.y - b.y
+        return CGFloat(sqrt(xDist * xDist + yDist * yDist))
+    }
+    func middlePoint(_ a: CGPoint, _ b: CGPoint) -> CGPoint{
+        var middle:CGPoint = .zero
+        middle.x = (a.x + b.x) / 2
+        middle.y = (a.y + b.y) / 2
+        return middle
+    }
+}
