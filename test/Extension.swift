@@ -43,4 +43,11 @@ extension UIView{
         middle.y = (a.y + b.y) / 2
         return middle
     }
+    
 }
+extension CGRect{
+    var center: CGPoint { return CGPoint(x: midX, y: midY) }
+
+}
+
+

@@ -20,12 +20,20 @@ class ViewController: UIViewController {
     private lazy var panRecognizer: UIPanGestureRecognizer = {
         return UIPanGestureRecognizer(target: self, action: #selector(panGestureCalled(_:)))
     }()
+    
+    @objc func yourTapFunctionInsideView() {
+        DrawLineUserTouch.clearAll()
+    }
+
     let DrawLineUserTouch:DrawLineWhenUserTouch = DrawLineWhenUserTouch()
+    
+    
     override func viewDidLoad() {
+        
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         view.backgroundColor = .blue
-        let logoutBarButtonItem = UIBarButtonItem(title: "Logout", style: .done, target: self, action: nil)
+        let logoutBarButtonItem = UIBarButtonItem(title: "ClearAll", style: .done, target: self, action: #selector(yourTapFunctionInsideView))
         self.navigationItem.rightBarButtonItem  = logoutBarButtonItem
         view.addSubview(DrawLineUserTouch)
         DrawLineUserTouch.translatesAutoresizingMaskIntoConstraints = false
@@ -33,8 +41,12 @@ class ViewController: UIViewController {
         DrawLineUserTouch.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         DrawLineUserTouch.heightAnchor.constraint(equalToConstant: view.frame.height).isActive = true
         DrawLineUserTouch.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
+        //	self.view.backgroundColor = UIColor(patternImage: UIImage(named: "image")!)
+
     }
-    
+    override func viewWillAppear(_ animated: Bool) {
+        //AppDelegate.AppUtility.lockOrientation(UIInterfaceOrientationMask.portrait, andRotateTo: UIInterfaceOrientation.portrait)
+    }
     
     // MARK: Selectors
     @objc func panGestureCalled(_: UIPanGestureRecognizer) {

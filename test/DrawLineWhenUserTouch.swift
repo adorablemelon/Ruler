@@ -25,6 +25,7 @@ class DrawLineWhenUserTouch: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    
     let clearButton:UIButton = {
         let button:UIButton = UIButton()
         button.backgroundColor = .orange
@@ -44,6 +45,7 @@ class DrawLineWhenUserTouch: UIView {
     var dotEndPointX:CGPoint?
     var dotEndPointY:CGPoint?
     struct bezierPathStruct{
+        static var key:Int = 0
         var angle:CGFloat
         var startPoint:CGPoint?
         var endPoint:CGPoint?
@@ -57,7 +59,7 @@ class DrawLineWhenUserTouch: UIView {
         var circleStart:CAShapeLayer?
         var circleEnd:CAShapeLayer?
         var arrayShapeLayer:[CAShapeLayer] = [CAShapeLayer]()
-        
+        var tag:Int?
         init(startPoint:CGPoint, endPoint:CGPoint, dotStartPointX:CGPoint, dotStartPointY:CGPoint, dotEndPointX:CGPoint, dotEndPointY:CGPoint, path:CAShapeLayer, dotStart:CAShapeLayer, dotEnd:CAShapeLayer, circleStart:CAShapeLayer, circleEnd:CAShapeLayer, angle:CGFloat) {
             self.startPoint = startPoint
             self.endPoint = endPoint
@@ -71,11 +73,13 @@ class DrawLineWhenUserTouch: UIView {
             self.circleEnd = circleEnd
             self.circleStart = circleStart
             self.angle = angle
+            self.tag = bezierPathStruct.key
+            print(self.tag)
+            bezierPathStruct.key += 1
             arrayShapeLayer.append(contentsOf: [path,dotEnd,dotStart,circleStart,circleEnd])
             
-            
         }
-        
+     
         func deleteRuler(){
             self.path?.removeFromSuperlayer()
             self.dotStart?.removeFromSuperlayer()
@@ -86,7 +90,7 @@ class DrawLineWhenUserTouch: UIView {
         }
     }
     
-    private var tapGestureStartPoint: CGPoint = .zero
+    private var notTouchedPoint: CGPoint = .zero
     
     private lazy var tapRecognizer: UITapGestureRecognizer = {
         return UITapGestureRecognizer(target: self, action: #selector(handleTap(recognizer:)))
@@ -124,23 +128,15 @@ class DrawLineWhenUserTouch: UIView {
         let zeroPoint:CGPoint = .zero
         
         let currentPanPoint = longTapRecognizer.location(in: self)
-       // print("here",currentPanPoint)
-//        let sublayerss = self.layer.sublayers.flatMap { $0 as? CAShapeLayer }
-//        print(sublayerss)
-        //let sublayers = self.layer.sublayers.flatMap { $0 as? CAShapeLayer }
-        //print(self.layer.sublayers?.compactMap() { $0 as? CAShapeLayer })
-        if let sublayers = self.layer.sublayers?.compactMap({ $0 as? CAShapeLayer }){ //get all CAShape and stored as an array
-            print("loop sublayer")
+           if let sublayers = self.layer.sublayers?.compactMap({ $0 as? CAShapeLayer }){ //get all CAShape and stored as an array
             for layer in sublayers{ // go through each CAShape
-                print("loop layer")
                 if let path = layer.path, path.contains(currentPanPoint) { // if there is a path at that point then return, else create a path
-                    print("detecting")
+                    
                     startPointOfTouchedRuler = detectWhichRuler(layer: layer)
                     if startPointOfTouchedRuler != zeroPoint{
                         break
-                    }else{
                     }
-                }
+                }else{}
             }
         }
         let linePath = UIBezierPath()
@@ -149,79 +145,61 @@ class DrawLineWhenUserTouch: UIView {
         
         let verticalLinePath1 = UIBezierPath()
         let verticalLinePath2 = UIBezierPath()
-
+        
         switch longTapRecognizer.state {
         case .began:
-            print("began")
+            print("startPoint:",startPointOfTouchedRuler)
 
-            tapGestureStartPoint = startPointOfTouchedRuler
-            if tapGestureStartPoint == zeroPoint {return}
-            
+            notTouchedPoint = startPointOfTouchedRuler
+            if notTouchedPoint == zeroPoint {return}
             self.layer.addSublayer(lineShape)
             self.layer.addSublayer(shapeLayer1)
             self.layer.addSublayer(shapeLayer2)
             self.layer.addSublayer(verticalLineShape)
             self.layer.addSublayer(verticalLineShape2)
             if currentDraggedPointNailed != nil{
-                print("went began draw")
                 let centerPoint = currentDraggedPointNailed!
                 let tempAngle = atan2(currentPanPoint.y - centerPoint.y, currentPanPoint.x - centerPoint.x)
-
                 verticalLinePath1.move(to: CGPoint(x: startPointOfTouchedRuler.x, y: startPointOfTouchedRuler.y - dotLineSize ))
                 verticalLinePath1.addLine(to: CGPoint(x: startPointOfTouchedRuler.x  , y: startPointOfTouchedRuler.y + dotLineSize))
                 verticalLinePath1.rotate(path: verticalLinePath1, angle:tempAngle)
-
                 verticalLinePath2.move(to: CGPoint(x: currentPanPoint.x, y: currentPanPoint.y - dotLineSize))
                 verticalLinePath2.addLine(to: CGPoint(x: currentPanPoint.x, y: currentPanPoint.y + dotLineSize))
                 verticalLinePath2.rotate(path: verticalLinePath2, angle:tempAngle)
-
                 verticalLineShape.path = verticalLinePath1.cgPath
                 verticalLineShape2.path = verticalLinePath2.cgPath
                 verticalLineShape.path = verticalLinePath1.cgPath
                 verticalLineShape2.path = verticalLinePath2.cgPath
-
-                linePath.move(to: tapGestureStartPoint)
+                linePath.move(to: notTouchedPoint)
                 linePath.addLine(to: currentPanPoint)
                 circlePath = UIBezierPath(arcCenter: currentPanPoint, radius: 15.0, startAngle: CGFloat(0), endAngle: CGFloat(Double.pi * 2.0), clockwise: true)
                 circlePath2 = UIBezierPath(arcCenter: startPointOfTouchedRuler, radius: 15.0, startAngle: CGFloat(0), endAngle: CGFloat(Double.pi * 2.0), clockwise: true)
                 shapeLayer2.path = circlePath2.cgPath
                 shapeLayer1.path = circlePath.cgPath
                 lineShape.path = linePath.cgPath
-                
             }
-           
-
-           
-            
         case .changed:
             let centerPoint:CGPoint
             if currentDraggedPointNailed != nil{
+                
                 centerPoint = currentDraggedPointNailed!
                 let tempAngle = atan2(currentPanPoint.y - centerPoint.y, currentPanPoint.x - centerPoint.x)
                 verticalLinePath1.move(to: CGPoint(x: currentDraggedPointNailed!.x, y: currentDraggedPointNailed!.y - dotLineSize ))
                 verticalLinePath1.addLine(to: CGPoint(x: currentDraggedPointNailed!.x  , y: currentDraggedPointNailed!.y + dotLineSize))
                 verticalLinePath1.rotate(path: verticalLinePath1, angle:tempAngle)
                 verticalLineShape.path = verticalLinePath1.cgPath
-                
-    //
                 verticalLinePath2.move(to: CGPoint(x: currentPanPoint.x , y: currentPanPoint.y - dotLineSize))
                 verticalLinePath2.addLine(to: CGPoint(x: currentPanPoint.x, y: currentPanPoint.y + dotLineSize))
                 verticalLinePath2.rotate(path: verticalLinePath2, angle: tempAngle)
-
                 verticalLineShape2.path = verticalLinePath2.cgPath
-
-                linePath.move(to: tapGestureStartPoint)
+                linePath.move(to: notTouchedPoint)
                 linePath.addLine(to: currentPanPoint)
                 circlePath = UIBezierPath(arcCenter: currentPanPoint, radius: 15.0, startAngle: CGFloat(0), endAngle: CGFloat(Double.pi * 2.0), clockwise: true)
                 shapeLayer1.path = circlePath.cgPath
-                circlePath.move(to: tapGestureStartPoint)
+                circlePath.move(to: notTouchedPoint)
                 lineShape.path = linePath.cgPath
-                
                 self.angle = tempAngle
             }
-            
-            
-        
         case .ended:
             verticalLineShape.path = nil
             verticalLineShape2.path = nil
@@ -234,19 +212,71 @@ class DrawLineWhenUserTouch: UIView {
             shapeLayer1.path = nil
             lineShape.removeFromSuperlayer()
             shapeLayer1.removeFromSuperlayer()
-            if tapGestureStartPoint == zeroPoint {return}
-            extendALine(startPoint: tapGestureStartPoint, currentPoint: currentPanPoint, angle: angle ?? 0.0)
+            if notTouchedPoint == zeroPoint {return}
+            extendALine(notTouchedPoint: notTouchedPoint, touchedPoint: currentPanPoint, angle: angle ?? 0.0)
          //   drawLineFromPoint(start: tapGestureStartPoint, toPoint: currentPanPoint, ofColor: .red, inView: self)
             shouldDeleteRuler = true
             currentDraggedPointNailed = .zero
             self.angle = 0.0
-            print("ended")
         default: print("default")
             break
         }
         
     }
 
+ 
+    
+    var isPathTouched:Bool = false
+    var bezierPathArray:[bezierPathStruct] = [bezierPathStruct]()
+    
+    func detectWhichRuler(layer: CAShapeLayer)->CGPoint{
+        var newRulerStartPoint:CGPoint = .zero
+        for (index,path)in self.bezierPathArray.enumerated(){
+            print(path.tag)
+            for shape in path.arrayShapeLayer{
+                if layer == shape {
+                    
+                    if layer == path.circleEnd || layer == path.dotEnd{
+                        newRulerStartPoint = path.startPoint!
+                        print("circle end")
+
+                        if currentDraggedPointNailed == CGPoint.zero{
+                            currentDraggedPointNailed = path.startPoint!
+                        }
+                        originalDraggingPoint = path.endPoint!
+                        isPathTouched = false
+                    }else if layer == path.circleStart || layer == path.dotStart{
+                        newRulerStartPoint = path.endPoint!
+                        print("circle start")
+
+                        if currentDraggedPointNailed == CGPoint.zero{
+                            currentDraggedPointNailed = path.endPoint!
+                        }
+                        originalDraggingPoint = path.startPoint!
+                        isPathTouched = false
+
+                    }else if layer == path.path{
+                        isPathTouched = true
+                    }
+                    if shouldDeleteRuler {
+                        path.deleteRuler()
+                        bezierPathArray.remove(at: index)
+                        shouldDeleteRuler = false
+                    }
+                    
+                }
+            }
+        }
+        return newRulerStartPoint
+    }
+    
+    ///PanGesture
+    
+    var currentDraggedPointNailed:CGPoint?
+    var originalDraggingPoint:CGPoint?
+    var angle:CGFloat?
+    var isUnitSet:Bool = false
+    var unitValue:Float?
     let shapeLayer1: CAShapeLayer = {
         let shapeLayer:CAShapeLayer = CAShapeLayer()
         shapeLayer.fillColor = UIColor.red.cgColor
@@ -281,87 +311,72 @@ class DrawLineWhenUserTouch: UIView {
         lineShape.lineWidth = 5.0
         return lineShape
     }()
-    
-    
-    var bezierPathArray:[bezierPathStruct] = [bezierPathStruct]()
-    
-    func detectWhichRuler(layer: CAShapeLayer)->CGPoint{
-        var newRulerStartPoint:CGPoint = .zero
-        for (index,path)in self.bezierPathArray.enumerated(){
-            for shape in path.arrayShapeLayer{
-                if layer == shape {
-                    if layer == path.circleEnd{
-                        newRulerStartPoint = path.startPoint!
-                        if currentDraggedPointNailed == CGPoint.zero{
-                            currentDraggedPointNailed = path.startPoint!
-                        }
-                        originalDraggingPoint = path.endPoint!
-                    }else if layer == path.circleStart{
-                        newRulerStartPoint = path.endPoint!
-                        if currentDraggedPointNailed == CGPoint.zero{
-                            currentDraggedPointNailed = path.endPoint!
-                        }
-                        originalDraggingPoint = path.startPoint!
-                    }
-                    if shouldDeleteRuler {
-                        path.deleteRuler()
-                        bezierPathArray.remove(at: index)
-                        shouldDeleteRuler = false
-                    }
-                    
-                }
-            }
-        }
-        return newRulerStartPoint
-    }
-    
-    ///PanGesture
-    
-    var currentDraggedPointNailed:CGPoint?
-    var originalDraggingPoint:CGPoint?
-    var angle:CGFloat?
 }
 
 extension DrawLineWhenUserTouch{
     
-    func createUIViewOutSideRuler(startPoint:CGPoint, currentPoint:CGPoint, angle: CGFloat, midPoint: CGPoint) -> UIView{
-        let viewWidth = distanceFromTwoPoints(startPoint, currentPoint)
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let location = touches.first?.location(in: self) else {return}
+
+    }
+    
+    func createUIViewOutSideRuler(touchedPoint:CGPoint, notTouchedPoint:CGPoint, angle: CGFloat) -> UIView{
+        let viewWidth = distanceFromTwoPoints(touchedPoint, notTouchedPoint)
+
+        let view = UIView(frame: CGRect(x:notTouchedPoint.x, y: notTouchedPoint.y , width:  viewWidth, height: dotLineSize * 2))
         
-        let view = UIView(frame: CGRect(x:midPoint.x, y: midPoint.y - dotLineSize , width:  viewWidth, height: dotLineSize * 3))
+        let vectorToStartPoint = CGPoint(x: view.center.x - touchedPoint.x,
+                                                 y: view.center.y - touchedPoint.y )
+        view.transform = CGAffineTransform(translationX: vectorToStartPoint.x, y: vectorToStartPoint.y)
+                                     .rotated(by: angle)
+                                     .translatedBy(x: -vectorToStartPoint.x, y: -vectorToStartPoint.y)
+//     			    
         view.backgroundColor = .orange
-        view.transform = CGAffineTransform(rotationAngle: angle);
         self.addSubview(view)
         return view
     }
     
-    func extendALine(startPoint:CGPoint, currentPoint:CGPoint, angle: CGFloat){
-        let endPoint = startPoint
-        let startPoint = currentPoint
-        dotStartPointX = CGPoint(x: startPoint.x, y: startPoint.y - dotLineSize)
-        dotStartPointY = CGPoint(x: startPoint.x, y: startPoint.y + dotLineSize)
-        dotEndPointX = CGPoint(x: endPoint.x, y: endPoint.y - dotLineSize)
-        dotEndPointY = CGPoint(x: endPoint.x, y: endPoint.y + dotLineSize)
+    func createUILabel(midPoint:CGPoint, distance:CGFloat, angel:CGFloat, isUnitSet:Bool)->UIButton{
+        var buttonText:String?
+        if !isUnitSet{buttonText = "Enter unit"}
+        let button = UIButton(frame: CGRect(x: midPoint.x, y: midPoint.y + 5, width: distance, height: 20))
+      
+        button.setTitle(buttonText, for: .normal)
+        button.titleLabel?.textAlignment = .center
+        button.titleLabel?.textColor = .red
+        button.layer.borderWidth = 3.0
 
-        let path = drawLineFromPoint(start: startPoint, toPoint: endPoint, ofColor: fillColor, angle: 0, inView: self)
+        if angle != nil {
+            button.transform = CGAffineTransform(rotationAngle: angle!)}
+        self.addSubview(button)
+        return button
+    }
+    
+    func extendALine(notTouchedPoint:CGPoint, touchedPoint:CGPoint, angle: CGFloat){
+        let notTouchedPoint = notTouchedPoint
+        let touchedPoint = touchedPoint
+        dotStartPointX = CGPoint(x: touchedPoint.x, y: touchedPoint.y - dotLineSize)
+        dotStartPointY = CGPoint(x: touchedPoint.x, y: touchedPoint.y + dotLineSize)
+        dotEndPointX = CGPoint(x: notTouchedPoint.x, y: notTouchedPoint.y - dotLineSize)
+        dotEndPointY = CGPoint(x: notTouchedPoint.x, y: notTouchedPoint.y + dotLineSize)
+        let view = createUIViewOutSideRuler(touchedPoint: touchedPoint , notTouchedPoint: notTouchedPoint, angle: angle)
+
+        let path = drawLineFromPoint(start: touchedPoint, toPoint: notTouchedPoint, ofColor: fillColor, angle: 0, inView: self)
         let dotStart = drawLineFromPoint(start: dotStartPointX!, toPoint: dotStartPointY!, ofColor: fillColor, angle: angle, inView: self)
         let dotEnd = drawLineFromPoint(start: dotEndPointX!, toPoint: dotEndPointY!, ofColor: fillColor, angle: angle, inView: self)
-        let circleStart = drawCircle(point: startPoint)
-        let circleEnd = drawCircle(point: endPoint)
-        let newPath:bezierPathStruct = bezierPathStruct(startPoint: startPoint, endPoint: endPoint, dotStartPointX: dotStartPointX!, dotStartPointY: dotStartPointY!, dotEndPointX: dotEndPointX!, dotEndPointY: dotEndPointY!, path: path, dotStart: dotStart, dotEnd: dotEnd, circleStart: circleStart, circleEnd:circleEnd, angle: angle)
-        
-        
-        let pathMidPoint = CGPoint(x: path.frame.midX,y: path.frame.midY)
-        let view = createUIViewOutSideRuler(startPoint: endPoint, currentPoint: startPoint, angle: angle, midPoint: pathMidPoint)
-        view.layer.addSublayer(path)
-        view.layer.addSublayer(dotEnd)
-        view.layer.addSublayer(dotStart)
-        view.layer.addSublayer(circleEnd)
-        view.layer.addSublayer(circleStart)
+        let circleStart = drawCircle(point: touchedPoint)
+        let circleEnd = drawCircle(point: notTouchedPoint)
+        let newPath:bezierPathStruct = bezierPathStruct(startPoint: touchedPoint, endPoint: notTouchedPoint, dotStartPointX: dotStartPointX!, dotStartPointY: dotStartPointY!, dotEndPointX: dotEndPointX!, dotEndPointY: dotEndPointY!, path: path, dotStart: dotStart, dotEnd: dotEnd, circleStart: circleStart, circleEnd:circleEnd, angle: angle)
+       // let distance = distanceFromTwoPoints(endPoint, startPoint)
+
+       // let label = createUILabel(midPoint: endPoint, distance: distance, angel: angle, isUnitSet: false)
+
         bezierPathArray.append(newPath)
     }
     
     func drawWholeRuler(originalPoint:CGPoint){ //Draw a whole ruler with every components
         
+
         endPoint = CGPoint(x: originalPoint.x - 70, y: originalPoint.y)
         startPoint = CGPoint(x: originalPoint.x + 70, y: originalPoint.y)
         dotStartPointX = CGPoint(x: startPoint!.x, y: startPoint!.y - dotLineSize)
@@ -370,14 +385,18 @@ extension DrawLineWhenUserTouch{
         dotEndPointY = CGPoint(x: endPoint!.x, y: endPoint!.y + dotLineSize)
         
         let path = drawLineFromPoint(start: startPoint!, toPoint: endPoint!, ofColor: fillColor, angle: 0, inView: self)
-        createUIViewOutSideRuler(startPoint: startPoint!, currentPoint: endPoint!, angle: 0, midPoint: endPoint!)
         let dotStart = drawLineFromPoint(start: dotStartPointX!, toPoint: dotStartPointY!, ofColor: fillColor, angle: 0, inView: self)
         let dotEnd = drawLineFromPoint(start: dotEndPointX!, toPoint: dotEndPointY!, ofColor: fillColor, angle: 0, inView: self)
         
-        
+        //let view = createUIViewOutSideRuler(startPoint: startPoint! , currentPoint: endPoint!, angle: 0, midPoint: endPoint!)
+
         let circleStart = drawCircle(point: startPoint!)
         let circleEnd = drawCircle(point: endPoint!)
         let newPath:bezierPathStruct = bezierPathStruct(startPoint: startPoint!, endPoint: endPoint!, dotStartPointX: dotStartPointX!, dotStartPointY: dotStartPointY!, dotEndPointX: dotEndPointX!, dotEndPointY: dotEndPointY!, path: path, dotStart: dotStart, dotEnd: dotEnd, circleStart: circleStart, circleEnd:circleEnd, angle: 0.0)
+        //view.tag = newPath.tag!
+       // let distance = distanceFromTwoPoints(endPoint!, startPoint!)
+
+        //let label = createUILabel(midPoint: endPoint!, distance: distance, angel: 0.0, isUnitSet: false)
         bezierPathArray.append(newPath)
     }
     
@@ -389,7 +408,6 @@ extension DrawLineWhenUserTouch{
         shapeLayer.fillColor = fillColor.cgColor
         shapeLayer.strokeColor = fillColor.cgColor
         shapeLayer.opacity = 0.5
-        //  shapeLayer.bounds = shapeLayer.path!.boundingBox
         self.layer.addSublayer(shapeLayer)
         return shapeLayer
     }
@@ -414,7 +432,8 @@ extension DrawLineWhenUserTouch{
         
     }
     func clearAll(){
-        
+        self.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
+        bezierPathArray.removeAll()
     }
     
    

@@ -7,32 +7,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "FF5DF5C1-2F73-4E3E-901D-B830477196C1"
+            uuid = "64724BD1-75CD-4E3E-9241-21F737703C25"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "test/DrawLineWhenUserTouch.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "290"
-            endingLineNumber = "290"
-            landmarkName = "detectWhichRuler(layer:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "BD3B5990-89CC-445D-BF24-0866A920AE5E"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "test/DrawLineWhenUserTouch.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "293"
-            endingLineNumber = "293"
-            landmarkName = "detectWhichRuler(layer:)"
+            startingLineNumber = "127"
+            endingLineNumber = "127"
+            landmarkName = "handleLongPress(recognizer:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
