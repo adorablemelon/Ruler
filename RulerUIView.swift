@@ -13,7 +13,10 @@ class RulerUIView: UIView {
     var rulerViewTag:Int?
     var differenceX: CGFloat!
     var differenceY: CGFloat!
-
+    let leftBubble:UIButton = UIButton()
+    let rightBubble:UIButton = UIButton()
+    let rightVerticalLine:UIButton = UIButton()
+    let leftVerticalLine:UIButton = UIButton()
 
     var notDraggedPoint:CGPoint = .zero
     required init() {
@@ -36,31 +39,58 @@ class RulerUIView: UIView {
         let pathButton:UIButton = UIButton()
         self.addSubview(pathButton)
         pathButton.translatesAutoresizingMaskIntoConstraints = false
-        pathButton.topAnchor.constraint(equalTo: self.topAnchor, constant: 15).isActive = true
-        pathButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -15).isActive = true
-        pathButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 15).isActive = true
-        pathButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -15).isActive = true
+        pathButton.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
+        pathButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 25).isActive = true
+        pathButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -25).isActive = true
+        pathButton.heightAnchor.constraint(equalToConstant: 5).isActive = true
         pathButton.backgroundColor = .red
         pathButton.addGestureRecognizer(panMoveRecognizer)
 
         
-        let leftVerticalLine:UIButton = UIButton()
-        self.addSubview(leftVerticalLine)
-        leftVerticalLine.translatesAutoresizingMaskIntoConstraints = false
-        leftVerticalLine.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
-        leftVerticalLine.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -5).isActive = true
-        leftVerticalLine.leadingAnchor.constraint(equalTo: self.leadingAnchor,constant: 5).isActive = true
-        leftVerticalLine.trailingAnchor.constraint(equalTo: pathButton.leadingAnchor).isActive = true
-        leftVerticalLine.backgroundColor = .red
         
-        let rightVerticalLine:UIButton = UIButton()
+        self.addSubview(leftBubble)
+        leftBubble.translatesAutoresizingMaskIntoConstraints = false
+        leftBubble.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
+        leftBubble.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -5).isActive = true
+        leftBubble.centerXAnchor.constraint(equalTo: pathButton.leadingAnchor).isActive = true
+        leftBubble.widthAnchor.constraint(equalToConstant: 30).isActive = true
+        leftBubble.clipsToBounds = true
+        leftBubble.backgroundColor = .red
+        leftBubble.layer.cornerRadius = 30/2
+        leftBubble.alpha = 0.3
+        
+        
+        self.addSubview(rightBubble)
+        rightBubble.translatesAutoresizingMaskIntoConstraints = false
+        rightBubble.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
+        rightBubble.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -5).isActive = true
+        rightBubble.centerXAnchor.constraint(equalTo: pathButton.trailingAnchor).isActive = true
+        rightBubble.widthAnchor.constraint(equalToConstant: 30).isActive = true
+        rightBubble.clipsToBounds = true
+        rightBubble.backgroundColor = .red
+        rightBubble.layer.cornerRadius = 30/2
+        rightBubble.alpha = 0.3
+        rightBubble.addGestureRecognizer(panStretchRecognizer)
+
+        
+        
+
         self.addSubview(rightVerticalLine)
         rightVerticalLine.translatesAutoresizingMaskIntoConstraints = false
-        rightVerticalLine.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
-        rightVerticalLine.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -5).isActive = true
-        rightVerticalLine.trailingAnchor.constraint(equalTo: self.trailingAnchor,constant: -5).isActive = true
-        rightVerticalLine.leadingAnchor.constraint(equalTo: pathButton.trailingAnchor).isActive = true
+        rightVerticalLine.topAnchor.constraint(equalTo: rightBubble.topAnchor, constant: 2).isActive = true
+        rightVerticalLine.bottomAnchor.constraint(equalTo: rightBubble.bottomAnchor, constant: -2).isActive = true
+        rightVerticalLine.centerXAnchor.constraint(equalTo: pathButton.trailingAnchor).isActive = true
+        rightVerticalLine.widthAnchor.constraint(equalToConstant: 5).isActive = true
         rightVerticalLine.backgroundColor = .red
+        
+        self.addSubview(leftVerticalLine)
+        leftVerticalLine.translatesAutoresizingMaskIntoConstraints = false
+        leftVerticalLine.topAnchor.constraint(equalTo: leftBubble.topAnchor, constant: 2).isActive = true
+        leftVerticalLine.bottomAnchor.constraint(equalTo: leftBubble.bottomAnchor, constant: -2).isActive = true
+        leftVerticalLine.centerXAnchor.constraint(equalTo: pathButton.leadingAnchor).isActive = true
+        leftVerticalLine.widthAnchor.constraint(equalToConstant: 5).isActive = true
+        leftVerticalLine.backgroundColor = .red
+
     }
     
     private lazy var panMoveRecognizer: UIPanGestureRecognizer = {
@@ -87,16 +117,19 @@ class RulerUIView: UIView {
     
     @objc func handlePanStretch(recognizer: UIPanGestureRecognizer){
         let touchPoint = recognizer.location(in: self)
-        if panMoveRecognizer.state == .began{
-            print(notDraggedPoint = recognizer.location(in: self))
+        if panStretchRecognizer.state == .began{
+            notDraggedPoint = recognizer.location(in: self)
         }
-        if panMoveRecognizer.state == .changed{
-            differenceX = touchPoint.x - notDraggedPoint.x
-            differenceY = touchPoint.y - notDraggedPoint.y
-            var newFrame = self.frame
-            newFrame.origin.x = self.frame.origin.x + differenceX
-            newFrame.origin.y = self.frame.origin.y + differenceY
-            self.frame = newFrame
+        
+        if panStretchRecognizer.state == .changed{
+
+            let angle = atan2(touchPoint.y - leftBubble.center.y, touchPoint.x - leftBubble.center.x)
+            print("1",angle)
+            let vectorToStartPoint = CGPoint(x: leftBubble.center.x - touchPoint.x,
+                                                     y: leftBubble.center.y - touchPoint.y )
+            self.transform = CGAffineTransform(translationX: vectorToStartPoint.x, y: vectorToStartPoint.y)
+                                         .rotated(by: angle)
+                                         .translatedBy(x: -vectorToStartPoint.x, y: -vectorToStartPoint.y)
         }
     }
 }
