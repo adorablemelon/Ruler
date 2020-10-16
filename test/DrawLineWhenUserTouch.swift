@@ -28,7 +28,7 @@ class DrawLineWhenUserTouch: UIView {
     
     let clearButton:UIButton = {
         let button:UIButton = UIButton()
-        button.backgroundColor = .orange
+        button.backgroundColor = .yellow
         button.setTitle("Clear", for: .normal)
         button.layer.borderWidth = 2
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -79,7 +79,7 @@ class DrawLineWhenUserTouch: UIView {
             arrayShapeLayer.append(contentsOf: [path,dotEnd,dotStart,circleStart,circleEnd])
             
         }
-     
+        var color:UIColor?
         func deleteRuler(){
             self.path?.removeFromSuperlayer()
             self.dotStart?.removeFromSuperlayer()
@@ -322,9 +322,8 @@ extension DrawLineWhenUserTouch{
     
     func createUIViewOutSideRuler(touchedPoint:CGPoint, notTouchedPoint:CGPoint, angle: CGFloat) -> UIView{
         let viewWidth = distanceFromTwoPoints(touchedPoint, notTouchedPoint)
-
-        let view = UIView(frame: CGRect(x:notTouchedPoint.x, y: notTouchedPoint.y , width:  viewWidth, height: dotLineSize * 2))
         
+        let view = UIView(frame: CGRect(x:notTouchedPoint.x, y: notTouchedPoint.y , width:  viewWidth, height: dotLineSize * 2))
         let vectorToStartPoint = CGPoint(x: view.center.x - touchedPoint.x,
                                                  y: view.center.y - touchedPoint.y )
         view.transform = CGAffineTransform(translationX: vectorToStartPoint.x, y: vectorToStartPoint.y)
@@ -353,25 +352,25 @@ extension DrawLineWhenUserTouch{
     }
     
     func extendALine(notTouchedPoint:CGPoint, touchedPoint:CGPoint, angle: CGFloat){
-        let notTouchedPoint = notTouchedPoint
-        let touchedPoint = touchedPoint
-        dotStartPointX = CGPoint(x: touchedPoint.x, y: touchedPoint.y - dotLineSize)
-        dotStartPointY = CGPoint(x: touchedPoint.x, y: touchedPoint.y + dotLineSize)
-        dotEndPointX = CGPoint(x: notTouchedPoint.x, y: notTouchedPoint.y - dotLineSize)
-        dotEndPointY = CGPoint(x: notTouchedPoint.x, y: notTouchedPoint.y + dotLineSize)
-        let view = createUIViewOutSideRuler(touchedPoint: touchedPoint , notTouchedPoint: notTouchedPoint, angle: angle)
-
-        let path = drawLineFromPoint(start: touchedPoint, toPoint: notTouchedPoint, ofColor: fillColor, angle: 0, inView: self)
-        let dotStart = drawLineFromPoint(start: dotStartPointX!, toPoint: dotStartPointY!, ofColor: fillColor, angle: angle, inView: self)
-        let dotEnd = drawLineFromPoint(start: dotEndPointX!, toPoint: dotEndPointY!, ofColor: fillColor, angle: angle, inView: self)
-        let circleStart = drawCircle(point: touchedPoint)
-        let circleEnd = drawCircle(point: notTouchedPoint)
-        let newPath:bezierPathStruct = bezierPathStruct(startPoint: touchedPoint, endPoint: notTouchedPoint, dotStartPointX: dotStartPointX!, dotStartPointY: dotStartPointY!, dotEndPointX: dotEndPointX!, dotEndPointY: dotEndPointY!, path: path, dotStart: dotStart, dotEnd: dotEnd, circleStart: circleStart, circleEnd:circleEnd, angle: angle)
-       // let distance = distanceFromTwoPoints(endPoint, startPoint)
-
-       // let label = createUILabel(midPoint: endPoint, distance: distance, angel: angle, isUnitSet: false)
-
-        bezierPathArray.append(newPath)
+//        let notTouchedPoint = notTouchedPoint
+//        let touchedPoint = touchedPoint
+//        dotStartPointX = CGPoint(x: touchedPoint.x, y: touchedPoint.y - dotLineSize)
+//        dotStartPointY = CGPoint(x: touchedPoint.x, y: touchedPoint.y + dotLineSize)
+//        dotEndPointX = CGPoint(x: notTouchedPoint.x, y: notTouchedPoint.y - dotLineSize)
+//        dotEndPointY = CGPoint(x: notTouchedPoint.x, y: notTouchedPoint.y + dotLineSize)
+//        let view = createUIViewOutSideRuler(touchedPoint: touchedPoint , notTouchedPoint: notTouchedPoint, angle: angle)
+//
+//        let path = drawLineFromPoint(start: touchedPoint, toPoint: notTouchedPoint, ofColor: fillColor, angle: 0, inView: self)
+//        let dotStart = drawLineFromPoint(start: dotStartPointX!, toPoint: dotStartPointY!, ofColor: fillColor, angle: angle, inView: self)
+//        let dotEnd = drawLineFromPoint(start: dotEndPointX!, toPoint: dotEndPointY!, ofColor: fillColor, angle: angle, inView: self)
+//        let circleStart = drawCircle(point: touchedPoint)
+//        let circleEnd = drawCircle(point: notTouchedPoint)
+//        let newPath:bezierPathStruct = bezierPathStruct(startPoint: touchedPoint, endPoint: notTouchedPoint, dotStartPointX: dotStartPointX!, dotStartPointY: dotStartPointY!, dotEndPointX: dotEndPointX!, dotEndPointY: dotEndPointY!, path: path, dotStart: dotStart, dotEnd: dotEnd, circleStart: circleStart, circleEnd:circleEnd, angle: angle)
+//       // let distance = distanceFromTwoPoints(endPoint, startPoint)
+//
+//       // let label = createUILabel(midPoint: endPoint, distance: distance, angel: angle, isUnitSet: false)
+//
+//        bezierPathArray.append(newPath)
     }
     
     func drawWholeRuler(originalPoint:CGPoint){ //Draw a whole ruler with every components
@@ -384,23 +383,28 @@ extension DrawLineWhenUserTouch{
         dotEndPointX = CGPoint(x: endPoint!.x, y: endPoint!.y - dotLineSize)
         dotEndPointY = CGPoint(x: endPoint!.x, y: endPoint!.y + dotLineSize)
         
-        let path = drawLineFromPoint(start: startPoint!, toPoint: endPoint!, ofColor: fillColor, angle: 0, inView: self)
-        let dotStart = drawLineFromPoint(start: dotStartPointX!, toPoint: dotStartPointY!, ofColor: fillColor, angle: 0, inView: self)
-        let dotEnd = drawLineFromPoint(start: dotEndPointX!, toPoint: dotEndPointY!, ofColor: fillColor, angle: 0, inView: self)
-        
-        //let view = createUIViewOutSideRuler(startPoint: startPoint! , currentPoint: endPoint!, angle: 0, midPoint: endPoint!)
+        let view = createUIViewOutSideRuler(touchedPoint: startPoint!, notTouchedPoint: endPoint!, angle: 0)
+        let path = drawLineFromPoint(start: startPoint!, toPoint: endPoint!, ofColor: fillColor, angle: 0, inView: view)
+        let dotStart = drawLineFromPoint(start: dotStartPointX!, toPoint: dotStartPointY!, ofColor: fillColor, angle: 0, inView: view)
+        let dotEnd = drawLineFromPoint(start: dotEndPointX!, toPoint: dotEndPointY!, ofColor: fillColor, angle: 0, inView: view)
 
-        let circleStart = drawCircle(point: startPoint!)
-        let circleEnd = drawCircle(point: endPoint!)
+        let circleStart = drawCircle(point: startPoint!, inView: view)
+        let circleEnd = drawCircle(point: endPoint!, inView: view)
         let newPath:bezierPathStruct = bezierPathStruct(startPoint: startPoint!, endPoint: endPoint!, dotStartPointX: dotStartPointX!, dotStartPointY: dotStartPointY!, dotEndPointX: dotEndPointX!, dotEndPointY: dotEndPointY!, path: path, dotStart: dotStart, dotEnd: dotEnd, circleStart: circleStart, circleEnd:circleEnd, angle: 0.0)
+        
         //view.tag = newPath.tag!
        // let distance = distanceFromTwoPoints(endPoint!, startPoint!)
 
         //let label = createUILabel(midPoint: endPoint!, distance: distance, angel: 0.0, isUnitSet: false)
+        view.layer.addSublayer(path)
+        view.layer.addSublayer(dotEnd)
+        view.layer.addSublayer(dotStart)
+        view.layer.addSublayer(circleEnd)
+        view.layer.addSublayer(circleStart)
         bezierPathArray.append(newPath)
     }
     
-    func drawCircle(point: CGPoint) -> CAShapeLayer{ //draw circle at 2 ends components
+    func drawCircle(point: CGPoint, inView: UIView) -> CAShapeLayer{ //draw circle at 2 ends components
         let radius = dotLineSize + 5
         let circlePath = UIBezierPath(arcCenter: point, radius: radius, startAngle: CGFloat(0), endAngle: CGFloat(Double.pi * 2.0), clockwise: true)
         let shapeLayer = CAShapeLayer()
@@ -408,7 +412,6 @@ extension DrawLineWhenUserTouch{
         shapeLayer.fillColor = fillColor.cgColor
         shapeLayer.strokeColor = fillColor.cgColor
         shapeLayer.opacity = 0.5
-        self.layer.addSublayer(shapeLayer)
         return shapeLayer
     }
     func drawLineFromPoint(start : CGPoint, toPoint end:CGPoint, ofColor lineColor: UIColor,angle:CGFloat, inView view:UIView) ->CAShapeLayer { //draw a straight line component
@@ -424,9 +427,7 @@ extension DrawLineWhenUserTouch{
         shapeLayer.path = path.cgPath
         shapeLayer.strokeColor = lineColor.cgColor
         shapeLayer.lineWidth = 5
-        // shapeLayer.bounds = shapeLayer.path!.boundingBox
         
-        view.layer.addSublayer(shapeLayer)
         
         return shapeLayer
         

@@ -9,64 +9,52 @@
 import UIKit
 
 class ViewController: UIViewController {
-    @IBOutlet var dragFrom: UILabel!
-    private lazy var lineShape: CAShapeLayer = {
-        let lineShape = CAShapeLayer()
-        lineShape.strokeColor = UIColor.red.cgColor
-        lineShape.lineWidth = 2.0
-        return lineShape
-    }()
-    private var panGestureStartPoint: CGPoint = .zero
-    private lazy var panRecognizer: UIPanGestureRecognizer = {
-        return UIPanGestureRecognizer(target: self, action: #selector(panGestureCalled(_:)))
-    }()
+    var rulerWidth:CGFloat = 200
+    var rulerHeight:CGFloat = 40
     
-    @objc func yourTapFunctionInsideView() {
-        DrawLineUserTouch.clearAll()
-    }
+    private lazy var tapRecognizer: UITapGestureRecognizer = {
+        return UITapGestureRecognizer(target: self, action: #selector(handleTap(recognizer:)))
+    }()
+      
+    @objc func handleTap(recognizer: UIGestureRecognizer) {
+        let rulerView:RulerUIView = RulerUIView()
+        let touchPoint = recognizer.location(in: self.view)  // user touch point
 
-    let DrawLineUserTouch:DrawLineWhenUserTouch = DrawLineWhenUserTouch()
+        rulerView.frame = CGRect(x: touchPoint.x - rulerWidth/2, y: touchPoint.y - rulerHeight/2, width: rulerWidth, height: rulerHeight)
+        view.addSubview(rulerView)
+    }
+   
     
+   
     
     override func viewDidLoad() {
-        
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         view.backgroundColor = .blue
         let logoutBarButtonItem = UIBarButtonItem(title: "ClearAll", style: .done, target: self, action: #selector(yourTapFunctionInsideView))
         self.navigationItem.rightBarButtonItem  = logoutBarButtonItem
+        self.view.addGestureRecognizer(tapRecognizer)
+        
+    }
+    
+    /***********************************************************************************/
+    
+    func setupUIView(){
         view.addSubview(DrawLineUserTouch)
         DrawLineUserTouch.translatesAutoresizingMaskIntoConstraints = false
         DrawLineUserTouch.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         DrawLineUserTouch.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         DrawLineUserTouch.heightAnchor.constraint(equalToConstant: view.frame.height).isActive = true
         DrawLineUserTouch.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
-        //	self.view.backgroundColor = UIColor(patternImage: UIImage(named: "image")!)
-
+        //
+        self.view.backgroundColor = UIColor(patternImage: UIImage(named: "image")!)
     }
-    override func viewWillAppear(_ animated: Bool) {
-        //AppDelegate.AppUtility.lockOrientation(UIInterfaceOrientationMask.portrait, andRotateTo: UIInterfaceOrientation.portrait)
-    }
+   
     
     // MARK: Selectors
-    @objc func panGestureCalled(_: UIPanGestureRecognizer) {
-        let currentPanPoint = panRecognizer.location(in: self.view)
-        switch panRecognizer.state {
-        case .began:
-            panGestureStartPoint = currentPanPoint
-            self.view.layer.addSublayer(lineShape)
-            
-        case .changed:
-            let linePath = UIBezierPath()
-            linePath.move(to: panGestureStartPoint)
-            linePath.addLine(to: currentPanPoint)
-            
-            lineShape.path = linePath.cgPath
-        case .ended:
-            lineShape.path = nil
-            
-            lineShape.removeFromSuperlayer()
-        default: break
-        }
+    @objc func yourTapFunctionInsideView() {
+        DrawLineUserTouch.clearAll()
     }
+
+    let DrawLineUserTouch:DrawLineWhenUserTouch = DrawLineWhenUserTouch()
 }
