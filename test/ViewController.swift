@@ -8,9 +8,10 @@
 
 import UIKit
 class ViewController: UIViewController {
+    
     let drawingView:DrawingUIView = DrawingUIView()
     var currentUsingRulerView:UIView = UIView()
-
+    let drawLineView:DrawLineWhenUserTouch = DrawLineWhenUserTouch()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,6 +31,16 @@ class ViewController: UIViewController {
         drawingView.heightAnchor.constraint(equalToConstant: view.frame.height).isActive = true
         drawingView.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
         drawingView.backgroundColor = .blue
+        //self.view.backgroundColor = UIColor(patternImage: UIImage(named: "image")!)
+    }
+    func setupUIView2(){
+        view.addSubview(drawLineView)
+        drawLineView.translatesAutoresizingMaskIntoConstraints = false
+        drawLineView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        drawLineView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        drawLineView.heightAnchor.constraint(equalToConstant: view.frame.height).isActive = true
+        drawLineView.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
+        drawLineView.backgroundColor = .blue
         //self.view.backgroundColor = UIColor(patternImage: UIImage(named: "image")!)
     }
    

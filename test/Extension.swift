@@ -43,38 +43,9 @@ extension UIView{
         middle.y = (a.y + b.y) / 2
         return middle
     }
+   
+
     
-    func overlapHitTest(point: CGPoint, withEvent event: UIEvent?) -> UIView? {
-
-            // 1
-            if !self.isUserInteractionEnabled || self.isHidden || self.alpha == 0 {
-
-                return nil
-            }
-
-            // 2
-            var hitView: UIView? = self
-            if !self.point(inside: point, with: event) {
-
-                if self.clipsToBounds {
-
-                    return nil
-                } else {
-
-                    hitView = nil
-                }
-            }
-
-            // 3
-            for subview in self.subviews.reversed() {
-
-                let insideSubview = self.convert(point, to: subview)
-                if let sview = subview.overlapHitTest(point: insideSubview, withEvent: event) {
-                    return sview
-                }
-            }
-            return hitView
-        }
     
 }
 extension CGRect{

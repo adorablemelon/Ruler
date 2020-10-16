@@ -123,13 +123,12 @@ class RulerUIView: UIView {
         
         if panStretchRecognizer.state == .changed{
 
-            let angle = atan2(touchPoint.y - leftBubble.center.y, touchPoint.x - leftBubble.center.x)
-            print("1",angle)
-            let vectorToStartPoint = CGPoint(x: leftBubble.center.x - touchPoint.x,
-                                                     y: leftBubble.center.y - touchPoint.y )
-            self.transform = CGAffineTransform(translationX: vectorToStartPoint.x, y: vectorToStartPoint.y)
-                                         .rotated(by: angle)
-                                         .translatedBy(x: -vectorToStartPoint.x, y: -vectorToStartPoint.y)
+            let angle = atan2(touchPoint.y - leftBubble.frame.origin.y, touchPoint.x - leftBubble.frame.origin.x)
+            print(angle)
+            let center = CGPoint(x: leftBubble.frame.origin.x, y: leftBubble.frame.origin.y)
+           
+            self.transform = CGAffineTransform(rotationAngle: angle)
+
         }
     }
 }
