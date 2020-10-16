@@ -7,47 +7,30 @@
 //
 
 import UIKit
-
 class ViewController: UIViewController {
-    var rulerWidth:CGFloat = 200
-    var rulerHeight:CGFloat = 40
-    
-    private lazy var tapRecognizer: UITapGestureRecognizer = {
-        return UITapGestureRecognizer(target: self, action: #selector(handleTap(recognizer:)))
-    }()
-      
-    @objc func handleTap(recognizer: UIGestureRecognizer) {
-        let rulerView:RulerUIView = RulerUIView()
-        let touchPoint = recognizer.location(in: self.view)  // user touch point
+    let drawingView:DrawingUIView = DrawingUIView()
+    var currentUsingRulerView:UIView = UIView()
 
-        rulerView.frame = CGRect(x: touchPoint.x - rulerWidth/2, y: touchPoint.y - rulerHeight/2, width: rulerWidth, height: rulerHeight)
-        view.addSubview(rulerView)
-    }
-   
-    
-   
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        view.backgroundColor = .blue
         let logoutBarButtonItem = UIBarButtonItem(title: "ClearAll", style: .done, target: self, action: #selector(yourTapFunctionInsideView))
         self.navigationItem.rightBarButtonItem  = logoutBarButtonItem
-        self.view.addGestureRecognizer(tapRecognizer)
-        
+        setupUIView()
     }
     
     /***********************************************************************************/
     
     func setupUIView(){
-        view.addSubview(DrawLineUserTouch)
-        DrawLineUserTouch.translatesAutoresizingMaskIntoConstraints = false
-        DrawLineUserTouch.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-        DrawLineUserTouch.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        DrawLineUserTouch.heightAnchor.constraint(equalToConstant: view.frame.height).isActive = true
-        DrawLineUserTouch.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
-        //
-        self.view.backgroundColor = UIColor(patternImage: UIImage(named: "image")!)
+        view.addSubview(drawingView)
+        drawingView.translatesAutoresizingMaskIntoConstraints = false
+        drawingView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        drawingView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        drawingView.heightAnchor.constraint(equalToConstant: view.frame.height).isActive = true
+        drawingView.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
+        drawingView.backgroundColor = .blue
+        //self.view.backgroundColor = UIColor(patternImage: UIImage(named: "image")!)
     }
    
     

@@ -21,6 +21,7 @@
 		7879114B252E427400AAB33F /* testUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7879114A252E427400AAB33F /* testUITests.swift */; };
 		787E4120251C7F1C004272BE /* DrawLineWhenUserTouch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 787E411F251C7F1C004272BE /* DrawLineWhenUserTouch.swift */; };
 		78C4F8A32532848C004D44AE /* ViewController1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78C4F8A22532848C004D44AE /* ViewController1.swift */; };
+		78D1724925397A3100338A78 /* DrawingUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78D1724825397A3100338A78 /* DrawingUIView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +62,7 @@
 		7879114C252E427400AAB33F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		787E411F251C7F1C004272BE /* DrawLineWhenUserTouch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawLineWhenUserTouch.swift; sourceTree = "<group>"; };
 		78C4F8A22532848C004D44AE /* ViewController1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController1.swift; sourceTree = "<group>"; };
+		78D1724825397A3100338A78 /* DrawingUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingUIView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +93,7 @@
 		7879111C252E427200AAB33F = {
 			isa = PBXGroup;
 			children = (
+				78D1724825397A3100338A78 /* DrawingUIView.swift */,
 				782D9131253841D800D7110C /* RulerUIView.swift */,
 				782D912C2538395500D7110C /* RulerModel.swift */,
 				78791127252E427200AAB33F /* test */,
@@ -282,6 +285,7 @@
 				78C4F8A32532848C004D44AE /* ViewController1.swift in Sources */,
 				7847D57F252C537700308AFB /* Extension.swift in Sources */,
 				7879112D252E427200AAB33F /* ViewController.swift in Sources */,
+				78D1724925397A3100338A78 /* DrawingUIView.swift in Sources */,
 				78791129252E427200AAB33F /* AppDelegate.swift in Sources */,
 				787E4120251C7F1C004272BE /* DrawLineWhenUserTouch.swift in Sources */,
 				782D912D2538395500D7110C /* RulerModel.swift in Sources */,
