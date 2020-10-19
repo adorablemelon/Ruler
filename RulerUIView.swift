@@ -8,7 +8,10 @@
 
 import Foundation
 import UIKit
+
 class RulerUIView: UIView {
+    static var measureUnit = "0"
+
     var currentTag = 0
     var rulerViewTag:Int?
     var differenceX: CGFloat!
@@ -17,18 +20,19 @@ class RulerUIView: UIView {
     let rightBubble:UIButton = UIButton()
     let rightVerticalLine:UIButton = UIButton()
     let leftVerticalLine:UIButton = UIButton()
-
+    let measureUnitButton:UIButton = UIButton()
     var notDraggedPoint:CGPoint = .zero
     required init() {
-        print("init")
         super.init(frame: .zero)
         self.isUserInteractionEnabled = true
-        self.backgroundColor = .yellow
+        self.backgroundColor = .clear
         self.autoresizesSubviews = true
         self.viewWithTag(currentTag)
         rulerViewTag = currentTag
         currentTag += 1
         drawRulerInside()
+        let centerPoint:CGPoint = CGPoint(x: 0, y: 0.5)
+        self.layer.anchorPoint = centerPoint
         //self.addGestureRecognizer(panRecognizer)
     }
     required init?(coder: NSCoder) {
@@ -45,13 +49,27 @@ class RulerUIView: UIView {
         pathButton.heightAnchor.constraint(equalToConstant: 5).isActive = true
         pathButton.backgroundColor = .red
         pathButton.addGestureRecognizer(panMoveRecognizer)
-
         
+        self.addSubview(measureUnitButton)
+        var measureButtonTxt = ""
+        if RulerUIView.measureUnit == "0"{
+            measureButtonTxt = "Adjust measure"
+        }else{
+            measureButtonTxt = String(RulerUIView.measureUnit)
+        }
+        measureUnitButton.translatesAutoresizingMaskIntoConstraints = false
+        measureUnitButton.topAnchor.constraint(equalTo: pathButton.bottomAnchor).isActive = true
+        measureUnitButton.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
+        measureUnitButton.setTitle(measureButtonTxt, for: .normal)
+        measureUnitButton.titleLabel?.textAlignment = .center
+        measureUnitButton.setTitleColor(.red, for: .normal)
+        measureUnitButton.titleLabel?.font = .boldSystemFont(ofSize: 16)
+        measureUnitButton.addTarget(self, action: #selector(changeMeasureUnit), for: .touchDown)
         
         self.addSubview(leftBubble)
         leftBubble.translatesAutoresizingMaskIntoConstraints = false
-        leftBubble.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
-        leftBubble.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -5).isActive = true
+        leftBubble.topAnchor.constraint(equalTo: self.topAnchor, constant: 15).isActive = true
+        leftBubble.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -15).isActive = true
         leftBubble.centerXAnchor.constraint(equalTo: pathButton.leadingAnchor).isActive = true
         leftBubble.widthAnchor.constraint(equalToConstant: 30).isActive = true
         leftBubble.clipsToBounds = true
@@ -62,8 +80,8 @@ class RulerUIView: UIView {
         
         self.addSubview(rightBubble)
         rightBubble.translatesAutoresizingMaskIntoConstraints = false
-        rightBubble.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
-        rightBubble.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -5).isActive = true
+        rightBubble.topAnchor.constraint(equalTo: self.topAnchor, constant: 15).isActive = true
+        rightBubble.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -15).isActive = true
         rightBubble.centerXAnchor.constraint(equalTo: pathButton.trailingAnchor).isActive = true
         rightBubble.widthAnchor.constraint(equalToConstant: 30).isActive = true
         rightBubble.clipsToBounds = true
@@ -77,16 +95,16 @@ class RulerUIView: UIView {
 
         self.addSubview(rightVerticalLine)
         rightVerticalLine.translatesAutoresizingMaskIntoConstraints = false
-        rightVerticalLine.topAnchor.constraint(equalTo: rightBubble.topAnchor, constant: 2).isActive = true
-        rightVerticalLine.bottomAnchor.constraint(equalTo: rightBubble.bottomAnchor, constant: -2).isActive = true
+        rightVerticalLine.topAnchor.constraint(equalTo: rightBubble.topAnchor, constant: 5).isActive = true
+        rightVerticalLine.bottomAnchor.constraint(equalTo: rightBubble.bottomAnchor, constant: -5).isActive = true
         rightVerticalLine.centerXAnchor.constraint(equalTo: pathButton.trailingAnchor).isActive = true
         rightVerticalLine.widthAnchor.constraint(equalToConstant: 5).isActive = true
         rightVerticalLine.backgroundColor = .red
         
         self.addSubview(leftVerticalLine)
         leftVerticalLine.translatesAutoresizingMaskIntoConstraints = false
-        leftVerticalLine.topAnchor.constraint(equalTo: leftBubble.topAnchor, constant: 2).isActive = true
-        leftVerticalLine.bottomAnchor.constraint(equalTo: leftBubble.bottomAnchor, constant: -2).isActive = true
+        leftVerticalLine.topAnchor.constraint(equalTo: leftBubble.topAnchor, constant: 5).isActive = true
+        leftVerticalLine.bottomAnchor.constraint(equalTo: leftBubble.bottomAnchor, constant: -5).isActive = true
         leftVerticalLine.centerXAnchor.constraint(equalTo: pathButton.leadingAnchor).isActive = true
         leftVerticalLine.widthAnchor.constraint(equalToConstant: 5).isActive = true
         leftVerticalLine.backgroundColor = .red
@@ -106,6 +124,7 @@ class RulerUIView: UIView {
             print(notDraggedPoint = recognizer.location(in: self))
         }
         if panMoveRecognizer.state == .changed{
+            
             differenceX = touchPoint.x - notDraggedPoint.x
             differenceY = touchPoint.y - notDraggedPoint.y
             var newFrame = self.frame
@@ -123,12 +142,38 @@ class RulerUIView: UIView {
         
         if panStretchRecognizer.state == .changed{
 
-            let angle = atan2(touchPoint.y - leftBubble.frame.origin.y, touchPoint.x - leftBubble.frame.origin.x)
-            print(angle)
-            let center = CGPoint(x: leftBubble.frame.origin.x, y: leftBubble.frame.origin.y)
-           
+            let angle = atan2(touchPoint.y - leftBubble.bounds.origin.y, touchPoint.x - leftBubble.bounds.origin.x)
             self.transform = CGAffineTransform(rotationAngle: angle)
+//            let angle = self.transform.angleInDegrees
+//            let scaleX = self.transform.scaleX
+//            let scaleY = self.transform.scaleY
+//            let adjustedSize = CGSize(width: self.bounds.size.width * scaleX, height: self.bounds.size.height * scaleY)
 
         }
     }
+    @objc func changeMeasureUnit(){
+        print("1")
+        let alert = UIAlertController(title: "Set floor plan scale", message: "Note: to set GPS coordinates, select the ruler and tap on the end points", preferredStyle: .alert)
+               alert.addTextField { (textField) in
+                   textField.placeholder = "Input ruler length (ft)"
+            
+               }
+        alert.addAction(UIAlertAction(title: "Scale Plane", style: .cancel, handler: { [weak alert] (_) in
+            if let textField = alert?.textFields?[0]{
+                self.measureUnitButton.setTitle(textField.text, for: .normal)
+                RulerUIView.measureUnit  = String(textField.text!)
+                self.setNeedsDisplay()
+            }else{
+                return
+            }
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Cancle", style: .default, handler: .none))
+
+
+        self.window?.rootViewController?.present(alert, animated: false, completion: nil)
+        
+    }
+    
+    
 }

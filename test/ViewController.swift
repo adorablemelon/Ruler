@@ -8,13 +8,15 @@
 
 import UIKit
 class ViewController: UIViewController {
+   
+    
     
     let drawingView:DrawingUIView = DrawingUIView()
     var currentUsingRulerView:UIView = UIView()
     let drawLineView:DrawLineWhenUserTouch = DrawLineWhenUserTouch()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         // Do any additional setup after loading the view.
         let logoutBarButtonItem = UIBarButtonItem(title: "ClearAll", style: .done, target: self, action: #selector(yourTapFunctionInsideView))
         self.navigationItem.rightBarButtonItem  = logoutBarButtonItem

@@ -11,7 +11,7 @@ import UIKit
 class DrawingUIView: UIView {
     
     var rulerViewWidth:CGFloat = 200
-    var rulerViewHeight:CGFloat = 40
+    var rulerViewHeight:CGFloat = 60
     var startPosition:CGPoint = .zero
     var originalHeight:CGFloat = 0
     var rulerViewArray = [RulerUIView]()
