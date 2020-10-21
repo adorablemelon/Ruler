@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		782D912D2538395500D7110C /* RulerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 782D912C2538395500D7110C /* RulerModel.swift */; };
 		782D9132253841D800D7110C /* RulerUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 782D9131253841D800D7110C /* RulerUIView.swift */; };
+		78448E41253FD3330025A73A /* DrawingUIViewByBelzier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78448E40253FD3330025A73A /* DrawingUIViewByBelzier.swift */; };
+		78448E46253FDB020025A73A /* RulerBelzierModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78448E45253FDB020025A73A /* RulerBelzierModel.swift */; };
 		7847D57F252C537700308AFB /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7847D57E252C537700308AFB /* Extension.swift */; };
 		7861E82A251177300077FED6 /* ViewController2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7861E829251177300077FED6 /* ViewController2.swift */; };
 		78791129252E427200AAB33F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78791128252E427200AAB33F /* AppDelegate.swift */; };
@@ -44,6 +46,8 @@
 /* Begin PBXFileReference section */
 		782D912C2538395500D7110C /* RulerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulerModel.swift; sourceTree = "<group>"; };
 		782D9131253841D800D7110C /* RulerUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulerUIView.swift; sourceTree = "<group>"; };
+		78448E40253FD3330025A73A /* DrawingUIViewByBelzier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingUIViewByBelzier.swift; sourceTree = "<group>"; };
+		78448E45253FDB020025A73A /* RulerBelzierModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulerBelzierModel.swift; sourceTree = "<group>"; };
 		7847D57E252C537700308AFB /* Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
 		7861E829251177300077FED6 /* ViewController2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController2.swift; sourceTree = "<group>"; };
 		78791125252E427200AAB33F /* test.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = test.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -93,6 +97,8 @@
 		7879111C252E427200AAB33F = {
 			isa = PBXGroup;
 			children = (
+				78448E45253FDB020025A73A /* RulerBelzierModel.swift */,
+				78448E40253FD3330025A73A /* DrawingUIViewByBelzier.swift */,
 				78D1724825397A3100338A78 /* DrawingUIView.swift */,
 				782D9131253841D800D7110C /* RulerUIView.swift */,
 				782D912C2538395500D7110C /* RulerModel.swift */,
@@ -286,8 +292,10 @@
 				7847D57F252C537700308AFB /* Extension.swift in Sources */,
 				7879112D252E427200AAB33F /* ViewController.swift in Sources */,
 				78D1724925397A3100338A78 /* DrawingUIView.swift in Sources */,
+				78448E46253FDB020025A73A /* RulerBelzierModel.swift in Sources */,
 				78791129252E427200AAB33F /* AppDelegate.swift in Sources */,
 				787E4120251C7F1C004272BE /* DrawLineWhenUserTouch.swift in Sources */,
+				78448E41253FD3330025A73A /* DrawingUIViewByBelzier.swift in Sources */,
 				782D912D2538395500D7110C /* RulerModel.swift in Sources */,
 				7879112B252E427200AAB33F /* SceneDelegate.swift in Sources */,
 			);

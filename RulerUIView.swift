@@ -11,7 +11,7 @@ import UIKit
 
 class RulerUIView: UIView {
     static var measureUnit = "0"
-
+    var translation:CGPoint?
     var currentTag = 0
     var rulerViewTag:Int?
     var differenceX: CGFloat!
@@ -21,7 +21,9 @@ class RulerUIView: UIView {
     let rightVerticalLine:UIButton = UIButton()
     let leftVerticalLine:UIButton = UIButton()
     let measureUnitButton:UIButton = UIButton()
-    var notDraggedPoint:CGPoint = .zero
+    var originalTappedPoint:CGPoint = .zero
+    let anchorPoint:CGPoint = CGPoint(x: 0.12, y: 0.5)
+
     required init() {
         super.init(frame: .zero)
         self.isUserInteractionEnabled = true
@@ -31,8 +33,7 @@ class RulerUIView: UIView {
         rulerViewTag = currentTag
         currentTag += 1
         drawRulerInside()
-        let centerPoint:CGPoint = CGPoint(x: 0, y: 0.5)
-        self.layer.anchorPoint = centerPoint
+        self.layer.anchorPoint = anchorPoint
         //self.addGestureRecognizer(panRecognizer)
     }
     required init?(coder: NSCoder) {
@@ -42,6 +43,7 @@ class RulerUIView: UIView {
     func drawRulerInside(){
         let pathButton:UIButton = UIButton()
         self.addSubview(pathButton)
+        print(self.center)
         pathButton.translatesAutoresizingMaskIntoConstraints = false
         pathButton.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
         pathButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 25).isActive = true
@@ -66,6 +68,7 @@ class RulerUIView: UIView {
         measureUnitButton.titleLabel?.font = .boldSystemFont(ofSize: 16)
         measureUnitButton.addTarget(self, action: #selector(changeMeasureUnit), for: .touchDown)
         
+        
         self.addSubview(leftBubble)
         leftBubble.translatesAutoresizingMaskIntoConstraints = false
         leftBubble.topAnchor.constraint(equalTo: self.topAnchor, constant: 15).isActive = true
@@ -76,6 +79,8 @@ class RulerUIView: UIView {
         leftBubble.backgroundColor = .red
         leftBubble.layer.cornerRadius = 30/2
         leftBubble.alpha = 0.3
+        leftBubble.addGestureRecognizer(panStretchRecognizerLeft)
+
         
         
         self.addSubview(rightBubble)
@@ -85,10 +90,10 @@ class RulerUIView: UIView {
         rightBubble.centerXAnchor.constraint(equalTo: pathButton.trailingAnchor).isActive = true
         rightBubble.widthAnchor.constraint(equalToConstant: 30).isActive = true
         rightBubble.clipsToBounds = true
-        rightBubble.backgroundColor = .red
+        rightBubble.backgroundColor = .yellow
         rightBubble.layer.cornerRadius = 30/2
         rightBubble.alpha = 0.3
-        rightBubble.addGestureRecognizer(panStretchRecognizer)
+        rightBubble.addGestureRecognizer(panStretchRecognizerRight)
 
         
         
@@ -114,19 +119,23 @@ class RulerUIView: UIView {
     private lazy var panMoveRecognizer: UIPanGestureRecognizer = {
         return UIPanGestureRecognizer(target: self, action: #selector(handlePanMove(recognizer:)))
     }()
-    private lazy var panStretchRecognizer: UIPanGestureRecognizer = {
-        return UIPanGestureRecognizer(target: self, action: #selector(handlePanStretch(recognizer:)))
+    private lazy var panStretchRecognizerRight: UIPanGestureRecognizer = {
+        return UIPanGestureRecognizer(target: self, action: #selector(handlePanStretchRight(recognizer:)))
+    }()
+    
+    private lazy var panStretchRecognizerLeft: UIPanGestureRecognizer = {
+        return UIPanGestureRecognizer(target: self, action: #selector(handlePanStretchLeft(recognizer:)))
     }()
     
     @objc func handlePanMove(recognizer: UIPanGestureRecognizer){
         let touchPoint = recognizer.location(in: self)
         if panMoveRecognizer.state == .began{
-            print(notDraggedPoint = recognizer.location(in: self))
+            originalTappedPoint = recognizer.location(in: self)
         }
         if panMoveRecognizer.state == .changed{
             
-            differenceX = touchPoint.x - notDraggedPoint.x
-            differenceY = touchPoint.y - notDraggedPoint.y
+            differenceX = touchPoint.x - originalTappedPoint.x
+            differenceY = touchPoint.y - originalTappedPoint.y
             var newFrame = self.frame
             newFrame.origin.x = self.frame.origin.x + differenceX
             newFrame.origin.y = self.frame.origin.y + differenceY
@@ -134,25 +143,56 @@ class RulerUIView: UIView {
         }
     }
     
-    @objc func handlePanStretch(recognizer: UIPanGestureRecognizer){
+    var whichButtonDrag:Int?
+    var initialAngle = CGFloat(0)
+    var angle = CGFloat(0)
+    func pToA (point:CGPoint) -> CGFloat {
+            let loc = point
+            let c = self.convert(self.center, from:self.superview!)
+            return atan2(loc.y - c.y, loc.x - c.x)
+        }
+    @objc func handlePanStretchRight(recognizer: UIPanGestureRecognizer){
         let touchPoint = recognizer.location(in: self)
-        if panStretchRecognizer.state == .began{
-            notDraggedPoint = recognizer.location(in: self)
+        //stage began
+        if panStretchRecognizerRight.state == .began{
+            originalTappedPoint = recognizer.location(in: self)
+            self.initialAngle = pToA(point: touchPoint)
+            self.setAnchorPoint(CGPoint(x: 0.12, y: 0.5))
+        }
+        //stage changed
+        if panStretchRecognizerRight.state == .changed{
+            //rotate
+            let ang = pToA(point: touchPoint) - self.initialAngle
+            let absoluteAngle = self.angle + ang
+            let transform = self.transform.rotated(by: ang)
+            self.transform = transform
+            self.angle = absoluteAngle
         }
         
-        if panStretchRecognizer.state == .changed{
-
-            let angle = atan2(touchPoint.y - leftBubble.bounds.origin.y, touchPoint.x - leftBubble.bounds.origin.x)
-            self.transform = CGAffineTransform(rotationAngle: angle)
-//            let angle = self.transform.angleInDegrees
-//            let scaleX = self.transform.scaleX
-//            let scaleY = self.transform.scaleY
-//            let adjustedSize = CGSize(width: self.bounds.size.width * scaleX, height: self.bounds.size.height * scaleY)
-
+    }
+    
+    @objc func handlePanStretchLeft(recognizer: UIPanGestureRecognizer){
+        let touchPoint = recognizer.location(in: self)
+        print("left")
+        
+        //stage began
+        if panStretchRecognizerLeft.state == .began{
+            originalTappedPoint = recognizer.location(in: self)
+            self.initialAngle = pToA(point: touchPoint)
+            self.setAnchorPoint(CGPoint(x: 0.88, y: 0.5))
+                
+        }
+        //stage changed
+        if panStretchRecognizerLeft.state == .changed{
+            //rotate
+            let ang = pToA(point: touchPoint) - self.initialAngle
+            let absoluteAngle = self.angle + ang
+            let transform = self.transform.rotated(by: ang)
+            self.transform = transform
+            self.angle = absoluteAngle
         }
     }
     @objc func changeMeasureUnit(){
-        print("1")
         let alert = UIAlertController(title: "Set floor plan scale", message: "Note: to set GPS coordinates, select the ruler and tap on the end points", preferredStyle: .alert)
                alert.addTextField { (textField) in
                    textField.placeholder = "Input ruler length (ft)"

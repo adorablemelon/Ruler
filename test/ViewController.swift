@@ -14,6 +14,7 @@ class ViewController: UIViewController {
     let drawingView:DrawingUIView = DrawingUIView()
     var currentUsingRulerView:UIView = UIView()
     let drawLineView:DrawLineWhenUserTouch = DrawLineWhenUserTouch()
+    let DrawWithBelzier:DrawingUIViewByBelzier = DrawingUIViewByBelzier()
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -26,13 +27,13 @@ class ViewController: UIViewController {
     /***********************************************************************************/
     
     func setupUIView(){
-        view.addSubview(drawingView)
-        drawingView.translatesAutoresizingMaskIntoConstraints = false
-        drawingView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-        drawingView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        drawingView.heightAnchor.constraint(equalToConstant: view.frame.height).isActive = true
-        drawingView.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
-        drawingView.backgroundColor = .blue
+        view.addSubview(DrawWithBelzier)
+        DrawWithBelzier.translatesAutoresizingMaskIntoConstraints = false
+        DrawWithBelzier.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        DrawWithBelzier.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        DrawWithBelzier.heightAnchor.constraint(equalToConstant: view.frame.height).isActive = true
+        DrawWithBelzier.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
+        DrawWithBelzier.backgroundColor = .blue
         //self.view.backgroundColor = UIColor(patternImage: UIImage(named: "image")!)
     }
     func setupUIView2(){
