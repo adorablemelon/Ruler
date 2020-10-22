@@ -52,7 +52,9 @@ class DrawingUIViewByBelzier: UIView {
     @objc func handlePanGesture(recognizer: UIGestureRecognizer){
         let touchPoint = recognizer.location(in: self)
         for each in RulerModelArray{
-            if each.midPath.path?.contains(touchPoint) == true{
+            print(each.midPath.path!)
+            print(touchPoint)
+            if each.midPath.path?.boundingBoxOfPath.contains(touchPoint) == true{
                 print(each.ID)
             }
         }
@@ -178,7 +180,7 @@ extension DrawingUIViewByBelzier{
         let shapeLayer = CAShapeLayer()
         shapeLayer.path = path.cgPath
         shapeLayer.strokeColor = UIColor.red.cgColor
-        shapeLayer.lineWidth = 5
+        shapeLayer.lineWidth = 7
         self.layer.addSublayer(shapeLayer)
         return shapeLayer
     }
