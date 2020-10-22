@@ -11,6 +11,8 @@
 		782D9132253841D800D7110C /* RulerUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 782D9131253841D800D7110C /* RulerUIView.swift */; };
 		78448E41253FD3330025A73A /* DrawingUIViewByBelzier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78448E40253FD3330025A73A /* DrawingUIViewByBelzier.swift */; };
 		78448E46253FDB020025A73A /* RulerBelzierModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78448E45253FDB020025A73A /* RulerBelzierModel.swift */; };
+		78448E4B254131990025A73A /* modifiedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78448E4A254131990025A73A /* modifiedButton.swift */; };
+		78448E56254192940025A73A /* modifiedCAShapeLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78448E55254192940025A73A /* modifiedCAShapeLayer.swift */; };
 		7847D57F252C537700308AFB /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7847D57E252C537700308AFB /* Extension.swift */; };
 		7861E82A251177300077FED6 /* ViewController2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7861E829251177300077FED6 /* ViewController2.swift */; };
 		78791129252E427200AAB33F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78791128252E427200AAB33F /* AppDelegate.swift */; };
@@ -48,6 +50,8 @@
 		782D9131253841D800D7110C /* RulerUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulerUIView.swift; sourceTree = "<group>"; };
 		78448E40253FD3330025A73A /* DrawingUIViewByBelzier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingUIViewByBelzier.swift; sourceTree = "<group>"; };
 		78448E45253FDB020025A73A /* RulerBelzierModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulerBelzierModel.swift; sourceTree = "<group>"; };
+		78448E4A254131990025A73A /* modifiedButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = modifiedButton.swift; sourceTree = "<group>"; };
+		78448E55254192940025A73A /* modifiedCAShapeLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = modifiedCAShapeLayer.swift; sourceTree = "<group>"; };
 		7847D57E252C537700308AFB /* Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
 		7861E829251177300077FED6 /* ViewController2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController2.swift; sourceTree = "<group>"; };
 		78791125252E427200AAB33F /* test.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = test.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -97,6 +101,8 @@
 		7879111C252E427200AAB33F = {
 			isa = PBXGroup;
 			children = (
+				78448E55254192940025A73A /* modifiedCAShapeLayer.swift */,
+				78448E4A254131990025A73A /* modifiedButton.swift */,
 				78448E45253FDB020025A73A /* RulerBelzierModel.swift */,
 				78448E40253FD3330025A73A /* DrawingUIViewByBelzier.swift */,
 				78D1724825397A3100338A78 /* DrawingUIView.swift */,
@@ -286,6 +292,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				78448E56254192940025A73A /* modifiedCAShapeLayer.swift in Sources */,
+				78448E4B254131990025A73A /* modifiedButton.swift in Sources */,
 				7861E82A251177300077FED6 /* ViewController2.swift in Sources */,
 				782D9132253841D800D7110C /* RulerUIView.swift in Sources */,
 				78C4F8A32532848C004D44AE /* ViewController1.swift in Sources */,
