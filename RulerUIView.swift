@@ -95,8 +95,6 @@ class RulerUIView: UIView {
         rightBubble.alpha = 0.3
         rightBubble.addGestureRecognizer(panStretchRecognizerRight)
 
-        
-        
 
         self.addSubview(rightVerticalLine)
         rightVerticalLine.translatesAutoresizingMaskIntoConstraints = false

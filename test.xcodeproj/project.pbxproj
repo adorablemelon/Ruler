@@ -24,6 +24,7 @@
 		78791140252E427400AAB33F /* testTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7879113F252E427400AAB33F /* testTests.swift */; };
 		7879114B252E427400AAB33F /* testUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7879114A252E427400AAB33F /* testUITests.swift */; };
 		787E4120251C7F1C004272BE /* DrawLineWhenUserTouch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 787E411F251C7F1C004272BE /* DrawLineWhenUserTouch.swift */; };
+		789143D12542CDF800467256 /* modifedUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 789143D02542CDF800467256 /* modifedUIView.swift */; };
 		78C4F8A32532848C004D44AE /* ViewController1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78C4F8A22532848C004D44AE /* ViewController1.swift */; };
 		78D1724925397A3100338A78 /* DrawingUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78D1724825397A3100338A78 /* DrawingUIView.swift */; };
 /* End PBXBuildFile section */
@@ -69,6 +70,7 @@
 		7879114A252E427400AAB33F /* testUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = testUITests.swift; sourceTree = "<group>"; };
 		7879114C252E427400AAB33F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		787E411F251C7F1C004272BE /* DrawLineWhenUserTouch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawLineWhenUserTouch.swift; sourceTree = "<group>"; };
+		789143D02542CDF800467256 /* modifedUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = modifedUIView.swift; sourceTree = "<group>"; };
 		78C4F8A22532848C004D44AE /* ViewController1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController1.swift; sourceTree = "<group>"; };
 		78D1724825397A3100338A78 /* DrawingUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingUIView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -101,6 +103,7 @@
 		7879111C252E427200AAB33F = {
 			isa = PBXGroup;
 			children = (
+				789143D02542CDF800467256 /* modifedUIView.swift */,
 				78448E55254192940025A73A /* modifiedCAShapeLayer.swift */,
 				78448E4A254131990025A73A /* modifiedButton.swift */,
 				78448E45253FDB020025A73A /* RulerBelzierModel.swift */,
@@ -301,6 +304,7 @@
 				7879112D252E427200AAB33F /* ViewController.swift in Sources */,
 				78D1724925397A3100338A78 /* DrawingUIView.swift in Sources */,
 				78448E46253FDB020025A73A /* RulerBelzierModel.swift in Sources */,
+				789143D12542CDF800467256 /* modifedUIView.swift in Sources */,
 				78791129252E427200AAB33F /* AppDelegate.swift in Sources */,
 				787E4120251C7F1C004272BE /* DrawLineWhenUserTouch.swift in Sources */,
 				78448E41253FD3330025A73A /* DrawingUIViewByBelzier.swift in Sources */,

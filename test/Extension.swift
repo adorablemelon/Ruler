@@ -32,6 +32,11 @@ extension UIBezierPath {
     
 }
 extension UIView{
+    func differPoint(_ a: CGPoint, _ b: CGPoint) -> CGPoint {
+        let xDist = a.x - b.x
+        let yDist = a.y - b.y
+        return CGPoint(x: xDist, y: yDist)
+    }
     func distanceFromTwoPoints(_ a: CGPoint, _ b: CGPoint) -> CGFloat {
         let xDist = a.x - b.x
         let yDist = a.y - b.y
@@ -83,4 +88,7 @@ extension CGAffineTransform {
     }
 }
 
+extension CGPoint{
+   
+}
 

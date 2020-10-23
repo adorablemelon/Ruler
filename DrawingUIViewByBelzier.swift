@@ -20,10 +20,6 @@ class DrawingUIViewByBelzier: UIView {
     private lazy var tapRecognizer: UITapGestureRecognizer = {
         return UITapGestureRecognizer(target: self, action: #selector(handleTap(recognizer:)))
     }()
-    private lazy var panRecognizer: UIPanGestureRecognizer = {
-        return UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(recognizer:)))
-
-    }()
    
     
     required init() {
@@ -31,12 +27,12 @@ class DrawingUIViewByBelzier: UIView {
      
         self.isUserInteractionEnabled = true
         self.addGestureRecognizer(tapRecognizer)
-        self.addGestureRecognizer(panRecognizer)
         self.backgroundColor = .blue
     }
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
     
     
     @objc func handleTap(recognizer: UIGestureRecognizer) {
@@ -49,15 +45,27 @@ class DrawingUIViewByBelzier: UIView {
     var tempLeftCAShapeLayer = CAShapeLayer()
     var isRightButton:Bool = false
     
-    @objc func handlePanGesture(recognizer: UIGestureRecognizer){
+    
+    var originalLeftPointMove:CGPoint = .zero
+    var originalRightPointMove:CGPoint = .zero
+    @objc func handlePanGesture(recognizer: UIPanGestureRecognizer){
         let touchPoint = recognizer.location(in: self)
-        for each in RulerModelArray{
-            print(each.midPath.path!)
-            print(touchPoint)
-            if each.midPath.path?.boundingBoxOfPath.contains(touchPoint) == true{
-                print(each.ID)
-            }
+        guard let view = recognizer.view as? modifedUIView else { return }
+        if recognizer.state == .began{
+            originalLeftPointMove = RulerModelArray[view.tag].leftPoint
+            originalRightPointMove = RulerModelArray[view.tag].rightPoint
         }
+        if recognizer.state == .changed{
+//            let translation = recognizer.translation(in: self)
+//            recognizer.view!.center = CGPoint(x: recognizer.view!.center.x + translation.x, y: recognizer.view!.center.y + translation.y)
+//            recognizer.setTranslation(CGPoint.zero, in: self)
+            let leftPoint = CGPoint(x: touchPoint.x + rulerViewWidth/2, y: touchPoint.y)
+            let rightPoint = CGPoint(x: touchPoint.x - rulerViewWidth/2, y: touchPoint.y)
+
+            drawTempLine(point1: leftPoint,point2: rightPoint, tempCAShapeLayer: tempRightCAShapeLayer)
+        }
+
+
     }
     
     @objc func handleButtonLongPress(recognizer: UIGestureRecognizer) {
@@ -167,10 +175,11 @@ extension DrawingUIViewByBelzier{
         let rightPath = drawALine(point1: upperPointOfRightStraightLine, point2: lowerPointOfRightStraightLine)
         let rulerModel = RulerBelzierModel(ID: rulerTag, leftPoint: leftPoint, rightPoint: rightPoint, midPath: midPath, leftPath: leftPath, rightPath: rightPath, upPointLeft: upperPointOfLeftStraightLine, lowPointLeft: lowerPointOfLeftStraightLine, upPointRight: upperPointOfRightStraightLine, lowPointRight: lowerPointOfRightStraightLine)
         RulerModelArray.append(rulerModel)
-    }
-    
-    func drawLeftRightLine(upPoint:CGPoint, lowerPoint:CGPoint){
         
+        let view = createUIViewOutSideRuler(touchedPoint: leftPoint, notTouchedPoint: rightPoint, angle: 0, tag: rulerTag)
+        let panRecognizer: UIPanGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(recognizer:)))
+        view.addGestureRecognizer(panRecognizer)
+        view.tag = rulerTag
     }
     
     func drawALine(point1:CGPoint,point2:CGPoint)->CAShapeLayer{
@@ -180,7 +189,7 @@ extension DrawingUIViewByBelzier{
         let shapeLayer = CAShapeLayer()
         shapeLayer.path = path.cgPath
         shapeLayer.strokeColor = UIColor.red.cgColor
-        shapeLayer.lineWidth = 7
+        shapeLayer.lineWidth = 10
         self.layer.addSublayer(shapeLayer)
         return shapeLayer
     }
@@ -190,8 +199,16 @@ extension DrawingUIViewByBelzier{
         path.addLine(to: point2)
         tempCAShapeLayer.path = path.cgPath
         tempCAShapeLayer.strokeColor = UIColor.red.cgColor
-        tempCAShapeLayer.lineWidth = 5
+        tempCAShapeLayer.lineWidth = 10
         self.layer.addSublayer(tempCAShapeLayer)
+    }
+    func createUIViewOutSideRuler(touchedPoint:CGPoint, notTouchedPoint:CGPoint, angle: CGFloat, tag: Int) -> modifedUIView{
+        let viewWidth = distanceFromTwoPoints(touchedPoint, notTouchedPoint) + 20
+        let viewHeight:CGFloat = 20.0
+        let frame = CGRect(x:touchedPoint.x - 10, y: notTouchedPoint.y  , width:  viewWidth, height: viewHeight)
+        let view = modifedUIView(tag:tag, frame: frame)
+        self.addSubview(view)
+        return view
     }
   
 }
