@@ -20,13 +20,20 @@ class DrawingUIViewByBelzier: UIView {
     private lazy var tapRecognizer: UITapGestureRecognizer = {
         return UITapGestureRecognizer(target: self, action: #selector(handleTap(recognizer:)))
     }()
-   
+    private lazy var panRecognizer: UIPanGestureRecognizer = {
+        return UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(recognizer:)))
+    }()
+    
+
+    
     
     required init() {
         super.init(frame: .zero)
-     
+        
         self.isUserInteractionEnabled = true
         self.addGestureRecognizer(tapRecognizer)
+        self.addGestureRecognizer(panRecognizer)
+
         self.backgroundColor = .blue
     }
     required init?(coder: NSCoder) {
@@ -48,24 +55,29 @@ class DrawingUIViewByBelzier: UIView {
     
     var originalLeftPointMove:CGPoint = .zero
     var originalRightPointMove:CGPoint = .zero
+    var currentTag:Int = 0
     @objc func handlePanGesture(recognizer: UIPanGestureRecognizer){
         let touchPoint = recognizer.location(in: self)
-        guard let view = recognizer.view as? modifedUIView else { return }
+        print("here")
+//        guard let view = recognizer.view as? modifedUIView else { return }
         if recognizer.state == .began{
-            originalLeftPointMove = RulerModelArray[view.tag].leftPoint
-            originalRightPointMove = RulerModelArray[view.tag].rightPoint
+            for each in RulerModelArray{
+                if touchPoint.contained(byStraightLine: each.leftPoint, to: each.rightPoint, tolerance: 10) == true{
+                    currentTag = each.ID
+                    break
+                }
+            }
+            originalLeftPointMove = RulerModelArray[currentTag].leftPoint
+            originalRightPointMove = RulerModelArray[currentTag].rightPoint
         }
         if recognizer.state == .changed{
-//            let translation = recognizer.translation(in: self)
-//            recognizer.view!.center = CGPoint(x: recognizer.view!.center.x + translation.x, y: recognizer.view!.center.y + translation.y)
-//            recognizer.setTranslation(CGPoint.zero, in: self)
             let leftPoint = CGPoint(x: touchPoint.x + rulerViewWidth/2, y: touchPoint.y)
             let rightPoint = CGPoint(x: touchPoint.x - rulerViewWidth/2, y: touchPoint.y)
-
+            
             drawTempLine(point1: leftPoint,point2: rightPoint, tempCAShapeLayer: tempRightCAShapeLayer)
         }
-
-
+        
+        
     }
     
     @objc func handleButtonLongPress(recognizer: UIGestureRecognizer) {
@@ -81,7 +93,7 @@ class DrawingUIViewByBelzier: UIView {
             drawTempLine(point1: CGPoint(x: nailPoint.x, y: nailPoint.y + 10), point2: CGPoint(x: nailPoint.x, y: nailPoint.y - 10), tempCAShapeLayer: tempRightCAShapeLayer)
             drawTempLine(point1: CGPoint(x: button.center.x, y: button.center.y + 10), point2: CGPoint(x: button.center.x, y: button.center.y - 10), tempCAShapeLayer: tempLeftCAShapeLayer)
             buttonCenter = button.center
-
+            
         case .changed:
             button.center = touchPoint
             drawTempLine(point1: nailPoint, point2: touchPoint, tempCAShapeLayer: tempPathCAShapeLayer)
@@ -115,7 +127,7 @@ extension DrawingUIViewByBelzier{
         }
     }
     
-
+    
     func nonTouchedButtonPosition(ID:Int, position:modifiedButton.positionEnum)->CGPoint{ // return position of non touched Button
         if position == .left{
             return RulerModelArray[ID].rightPoint
@@ -135,7 +147,7 @@ extension DrawingUIViewByBelzier{
         }
         return ""
     }
-
+    
     func drawRuler(midPoint:CGPoint){
         let rulerTag = globalTag
         let rightPoint = CGPoint(x: midPoint.x + rulerViewWidth/2, y: midPoint.y)
@@ -169,17 +181,14 @@ extension DrawingUIViewByBelzier{
         let rightButtonTapRecognizer: UILongPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleButtonLongPress(recognizer:)))
         rightButton.addGestureRecognizer(rightButtonTapRecognizer)
         globalTag += 1
-            
+        
         let midPath = drawALine(point1: leftPoint, point2: rightPoint)
         let leftPath = drawALine(point1: upperPointOfLeftStraightLine, point2: lowerPointOfLeftStraightLine)
         let rightPath = drawALine(point1: upperPointOfRightStraightLine, point2: lowerPointOfRightStraightLine)
         let rulerModel = RulerBelzierModel(ID: rulerTag, leftPoint: leftPoint, rightPoint: rightPoint, midPath: midPath, leftPath: leftPath, rightPath: rightPath, upPointLeft: upperPointOfLeftStraightLine, lowPointLeft: lowerPointOfLeftStraightLine, upPointRight: upperPointOfRightStraightLine, lowPointRight: lowerPointOfRightStraightLine)
         RulerModelArray.append(rulerModel)
         
-        let view = createUIViewOutSideRuler(touchedPoint: leftPoint, notTouchedPoint: rightPoint, angle: 0, tag: rulerTag)
-        let panRecognizer: UIPanGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(recognizer:)))
-        view.addGestureRecognizer(panRecognizer)
-        view.tag = rulerTag
+        
     }
     
     func drawALine(point1:CGPoint,point2:CGPoint)->CAShapeLayer{
@@ -210,5 +219,5 @@ extension DrawingUIViewByBelzier{
         self.addSubview(view)
         return view
     }
-  
+    
 }

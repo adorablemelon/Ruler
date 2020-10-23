@@ -88,7 +88,41 @@ extension CGAffineTransform {
     }
 }
 
-extension CGPoint{
-   
-}
+extension UIBezierPath{
+    
+    func hasForHorizontalLine(pt point: CGPoint) -> Bool{
+        
+        let bezierRect = self.bounds
+        let origin = bezierRect.origin
+        let size = bezierRect.size
 
+        if origin.x <= point.x , origin.x + size.width >= point.x, origin.y - lineWidth * 0.5 <= point.y , origin.y + lineWidth * 0.5 >= point.y{
+            return true
+        }
+        else{
+            return false
+        }
+    }
+    
+}
+extension CGPoint{
+    
+    // tolerance, should by the lineWidth of a UIBezierPath
+
+    func contained(byStraightLine start: CGPoint,to end: CGPoint, tolerance width: CGFloat) -> Bool{
+
+        return distance(fromLine: start, to: end) <= width * 0.5
+    }
+    
+    
+    
+    func distance(fromLine start: CGPoint,to end: CGPoint) -> CGFloat{
+        
+        let a = end.y - start.y
+        let b = start.x - end.x
+        
+        let c = (start.y - end.y) * start.x + ( end.x - start.x ) * start.y
+        return abs(a * x + b * y + c)/sqrt(a*a + b*b)
+    }
+    
+}
