@@ -12,7 +12,7 @@ class modifiedButton: UIButton {
     enum positionEnum{
         case left
         case right
-        case middle
+        case unitText
     }
     var position:positionEnum
 

@@ -9,7 +9,10 @@
 import UIKit
 
 class DrawingUIViewByBelzier: UIView {
+    static var unitButtonValue = "0"
+
     var globalTag = 0
+    var unitValue = 100.0
     var rulerViewWidth:CGFloat = 200
     var rulerViewHeight:CGFloat = 60
     var startPosition:CGPoint = .zero
@@ -17,6 +20,7 @@ class DrawingUIViewByBelzier: UIView {
     var RulerModelArray = [RulerBelzierModel]()
     var nailPoint:CGPoint = .zero
     var buttonCenter: CGPoint = .zero
+
     private lazy var tapRecognizer: UITapGestureRecognizer = {
         return UITapGestureRecognizer(target: self, action: #selector(handleTap(recognizer:)))
     }()
@@ -44,64 +48,108 @@ class DrawingUIViewByBelzier: UIView {
     
     @objc func handleTap(recognizer: UIGestureRecognizer) {
         let touchPoint = recognizer.location(in: self)
-        drawRuler(midPoint: touchPoint)
+        let rightPoint = CGPoint(x: touchPoint.x + rulerViewWidth/2, y: touchPoint.y)
+        let leftPoint = CGPoint(x: touchPoint.x - rulerViewWidth/2, y: touchPoint.y)
+        drawRuler(middlePoint:touchPoint, rightPoint: rightPoint, leftPoint: leftPoint, angle: 0)
     }
     
     var tempPathCAShapeLayer = CAShapeLayer()
     var tempRightCAShapeLayer = CAShapeLayer()
     var tempLeftCAShapeLayer = CAShapeLayer()
+    var tempUnitButton = UIButton()
     var isRightButton:Bool = false
     
     
     var originalLeftPointMove:CGPoint = .zero
     var originalRightPointMove:CGPoint = .zero
-    var currentTag:Int = 0
+    var originalTouchPointMove:CGPoint = .zero
+    var originalButtonLeftPoint:CGPoint = .zero
+    var originalButtonRightPoint:CGPoint = .zero
+    var currentTag:Int = Int.max
     @objc func handlePanGesture(recognizer: UIPanGestureRecognizer){
         let touchPoint = recognizer.location(in: self)
-        print("here")
-//        guard let view = recognizer.view as? modifedUIView else { return }
+        let yOffSet = touchPoint.y - originalTouchPointMove.y
+        let xOffSet = touchPoint.x - originalTouchPointMove.x
+        let leftPoint = CGPoint(x: originalLeftPointMove.x + xOffSet, y: originalLeftPointMove.y + yOffSet)
+        let rightPoint = CGPoint(x: originalRightPointMove.x + xOffSet, y: originalRightPointMove.y + yOffSet)
         if recognizer.state == .began{
             for each in RulerModelArray{
-                if touchPoint.contained(byStraightLine: each.leftPoint, to: each.rightPoint, tolerance: 10) == true{
+                if touchPoint.contained(byStraightLine: each.leftPoint, to: each.rightPoint, tolerance: 20) == true{
                     currentTag = each.ID
+                    originalLeftPointMove = RulerModelArray[currentTag].leftPoint
+                    originalRightPointMove = RulerModelArray[currentTag].rightPoint
+                    originalAngle = RulerModelArray[currentTag].angle
+                    originalTouchPointMove = touchPoint
+                    RulerModelArray[currentTag].removePath()
+                    
+                    print(currentTag)
                     break
                 }
             }
-            originalLeftPointMove = RulerModelArray[currentTag].leftPoint
-            originalRightPointMove = RulerModelArray[currentTag].rightPoint
         }
         if recognizer.state == .changed{
-            let leftPoint = CGPoint(x: touchPoint.x + rulerViewWidth/2, y: touchPoint.y)
-            let rightPoint = CGPoint(x: touchPoint.x - rulerViewWidth/2, y: touchPoint.y)
+            if currentTag != Int.max{
+                drawTempLine(point1: leftPoint,point2: rightPoint, tempCAShapeLayer: tempPathCAShapeLayer, angle: 0)
+                drawTempLine(point1: CGPoint(x: leftPoint.x, y: leftPoint.y + 10), point2: CGPoint(x: leftPoint.x, y: leftPoint.y - 10), tempCAShapeLayer: tempRightCAShapeLayer, angle: originalAngle)
+                drawTempLine(point1: CGPoint(x: rightPoint.x, y: rightPoint.y + 10), point2: CGPoint(x: rightPoint.x, y: rightPoint.y - 10), tempCAShapeLayer: tempLeftCAShapeLayer, angle: originalAngle)
+                RulerModelArray[currentTag].leftButton.center.x = originalLeftPointMove.x + xOffSet
+                RulerModelArray[currentTag].leftButton.center.y = originalLeftPointMove.y + yOffSet
+                RulerModelArray[currentTag].rightButton.center.x = originalRightPointMove.x + xOffSet
+                RulerModelArray[currentTag].rightButton.center.y = originalRightPointMove.y + yOffSet
+            }
             
-            drawTempLine(point1: leftPoint,point2: rightPoint, tempCAShapeLayer: tempRightCAShapeLayer)
         }
-        
+        if recognizer.state == .ended{
+            if currentTag != Int.max{
+                substituteRulerAfterMove(ID: currentTag, leftPoint: leftPoint, RighPoint: rightPoint, angle: originalAngle)
+            }
+            originalLeftPointMove = .zero
+            originalRightPointMove = .zero
+            originalTouchPointMove = .zero
+            currentTag = Int.max
+        }
         
     }
     
+    var originalAngle = CGFloat(0)
+    var changedAngle = CGFloat(0)
+    var originalUnitButtonCenter:CGPoint = .zero // use to rotate button
+    var initialAngle = CGFloat(0) //use to rotate button
+    var angle = CGFloat(0) // use to rotate button
     @objc func handleButtonLongPress(recognizer: UIGestureRecognizer) {
         let touchPoint = recognizer.location(in: self)
         guard let button = recognizer.view as? modifiedButton else { return }
         let rulerID = button.tag
-        RulerModelArray[rulerID].removePath()
+        var tempAngle = CGFloat(0)
         switch recognizer.state {
         case .began:
             button.center = touchPoint
+            RulerModelArray[rulerID].removePath()
+            RulerModelArray[rulerID].removeButton()
+            originalAngle = RulerModelArray[rulerID].angle
             nailPoint = nonTouchedButtonPosition(ID: rulerID, position: button.position)
-            drawTempLine(point1: nailPoint, point2: touchPoint, tempCAShapeLayer: tempPathCAShapeLayer)
-            drawTempLine(point1: CGPoint(x: nailPoint.x, y: nailPoint.y + 10), point2: CGPoint(x: nailPoint.x, y: nailPoint.y - 10), tempCAShapeLayer: tempRightCAShapeLayer)
-            drawTempLine(point1: CGPoint(x: button.center.x, y: button.center.y + 10), point2: CGPoint(x: button.center.x, y: button.center.y - 10), tempCAShapeLayer: tempLeftCAShapeLayer)
+            drawTempLine(point1: nailPoint, point2: touchPoint, tempCAShapeLayer: tempPathCAShapeLayer, angle: 0) // MIDDLE LINE
+            drawTempLine(point1: CGPoint(x: nailPoint.x, y: nailPoint.y + 10), point2: CGPoint(x: nailPoint.x, y: nailPoint.y - 10), tempCAShapeLayer: tempRightCAShapeLayer, angle: originalAngle)
+            drawTempLine(point1: CGPoint(x: button.center.x, y: button.center.y + 10), point2: CGPoint(x: button.center.x, y: button.center.y - 10), tempCAShapeLayer: tempLeftCAShapeLayer, angle: originalAngle)
+//            RulerModelArray[rulerID].unitButton.setAnchorPoint(CGPoint(x: 0, y: 0.5))
+//            originalUnitButtonCenter = RulerModelArray[rulerID].unitButton.center
             buttonCenter = button.center
             
         case .changed:
             button.center = touchPoint
-            drawTempLine(point1: nailPoint, point2: touchPoint, tempCAShapeLayer: tempPathCAShapeLayer)
-            drawTempLine(point1: CGPoint(x: nailPoint.x, y: nailPoint.y + 10), point2: CGPoint(x: nailPoint.x, y: nailPoint.y - 10), tempCAShapeLayer: tempRightCAShapeLayer)
-            drawTempLine(point1: CGPoint(x: button.center.x, y: button.center.y + 10), point2: CGPoint(x: button.center.x, y: button.center.y - 10), tempCAShapeLayer: tempLeftCAShapeLayer)
+            tempAngle = atan2(touchPoint.y - nailPoint.y, touchPoint.x - nailPoint.x)
+            drawTempLine(point1: nailPoint, point2: touchPoint, tempCAShapeLayer: tempPathCAShapeLayer, angle: 0) // middle line
+            drawTempLine(point1: CGPoint(x: nailPoint.x, y: nailPoint.y + 10), point2: CGPoint(x: nailPoint.x, y: nailPoint.y - 10), tempCAShapeLayer: tempRightCAShapeLayer, angle: tempAngle)
+            drawTempLine(point1: CGPoint(x: button.center.x, y: button.center.y + 10), point2: CGPoint(x: button.center.x, y: button.center.y - 10), tempCAShapeLayer: tempLeftCAShapeLayer, angle: tempAngle)
+            changedAngle = tempAngle
+            let distance = distanceFromTwoPoints(nailPoint, touchPoint)
+            let anchorPoint = CGPoint(x: 0, y: 0.5)
+            drawTempUnitButton(buttonPoint: nailPoint, unitButtonWidth: distance, anchorPoint: anchorPoint, angle: tempAngle, button: tempUnitButton, unitValue: distance)
         case .ended:
             let position = touchedButtonPosition(position: button.position)
-            substituteRulerAfterStretch(ID: rulerID, positionOfMovedButton: position, newPosition: touchPoint)
+            substituteRulerAfterStretch(ID: rulerID, positionOfMovedButton: position, newPosition: touchPoint, angle: changedAngle)
+            tempLeftCAShapeLayer.removeFromSuperlayer()
+            tempRightCAShapeLayer.removeFromSuperlayer()
             tempPathCAShapeLayer.removeFromSuperlayer()
         default: print("default")
             break
@@ -110,13 +158,14 @@ class DrawingUIViewByBelzier: UIView {
 }
 
 extension DrawingUIViewByBelzier{
-    func substituteRulerAfterStretch(ID:Int,positionOfMovedButton:String, newPosition:CGPoint ){
-        let newLine = drawALine(point1: nailPoint, point2: newPosition)
-        let rightNewLine = drawALine(point1: CGPoint(x: nailPoint.x, y: nailPoint.y + 10), point2: CGPoint(x: nailPoint.x, y: nailPoint.y - 10))
-        let leftNewLine = drawALine(point1: CGPoint(x: newPosition.x, y: newPosition.y + 10), point2: CGPoint(x: newPosition.x, y: newPosition.y - 10))
+    func substituteRulerAfterStretch(ID:Int,positionOfMovedButton:String, newPosition:CGPoint, angle:CGFloat ){
+        let newLine = drawALine(point1: nailPoint, point2: newPosition, angle: 0) // middle line
+        let rightNewLine = drawALine(point1: CGPoint(x: nailPoint.x, y: nailPoint.y + 10), point2: CGPoint(x: nailPoint.x, y: nailPoint.y - 10), angle: angle)
+        let leftNewLine = drawALine(point1: CGPoint(x: newPosition.x, y: newPosition.y + 10), point2: CGPoint(x: newPosition.x, y: newPosition.y - 10), angle: angle)
         RulerModelArray[ID].midPath = newLine
         RulerModelArray[ID].leftPath = leftNewLine
         RulerModelArray[ID].rightPath = rightNewLine
+        RulerModelArray[ID].angle = angle
         if positionOfMovedButton == "Left"{
             print("left")
             RulerModelArray[ID].leftPoint = newPosition
@@ -125,6 +174,17 @@ extension DrawingUIViewByBelzier{
             print("Right")
             RulerModelArray[ID].rightPoint = newPosition
         }
+    }
+    
+    func substituteRulerAfterMove(ID:Int, leftPoint:CGPoint, RighPoint:CGPoint, angle:CGFloat){
+        let newLine = drawALine(point1: leftPoint, point2: RighPoint, angle: 0) // middle line
+        let rightNewLine = drawALine(point1: CGPoint(x: RighPoint.x, y: RighPoint.y + 10), point2: CGPoint(x: RighPoint.x, y: RighPoint.y - 10), angle: angle)
+        let leftNewLine = drawALine(point1: CGPoint(x: leftPoint.x, y: leftPoint.y + 10), point2: CGPoint(x: leftPoint.x, y: leftPoint.y - 10), angle: angle)
+        RulerModelArray[ID].midPath = newLine
+        RulerModelArray[ID].leftPath = leftNewLine
+        RulerModelArray[ID].rightPath = rightNewLine
+        RulerModelArray[ID].leftPoint = leftPoint
+        RulerModelArray[ID].rightPoint = RighPoint
     }
     
     
@@ -148,53 +208,106 @@ extension DrawingUIViewByBelzier{
         return ""
     }
     
-    func drawRuler(midPoint:CGPoint){
+    func drawRuler(middlePoint:CGPoint, rightPoint:CGPoint, leftPoint:CGPoint,angle:CGFloat){
         let rulerTag = globalTag
-        let rightPoint = CGPoint(x: midPoint.x + rulerViewWidth/2, y: midPoint.y)
-        let leftPoint = CGPoint(x: midPoint.x - rulerViewWidth/2, y: midPoint.y)
         let upperPointOfLeftStraightLine = CGPoint(x: leftPoint.x, y: leftPoint.y + 10)
         let lowerPointOfLeftStraightLine = CGPoint(x: leftPoint.x, y: leftPoint.y - 10)
         let upperPointOfRightStraightLine = CGPoint(x: rightPoint.x, y: rightPoint.y + 10)
         let lowerPointOfRightStraightLine = CGPoint(x: rightPoint.x, y: rightPoint.y - 10)
-        
-        let leftButton = modifiedButton(position: .left)
-        leftButton.frame =  CGRect(x: leftPoint.x - 15, y: rightPoint.y - 15, width: 30, height: 30)
-        self.addSubview(leftButton)
-        leftButton.clipsToBounds = true
-        leftButton.backgroundColor = .red
-        leftButton.layer.cornerRadius = 30/2
-        leftButton.alpha = 0.3
-        leftButton.layer.cornerRadius = 30/2
-        leftButton.tag = rulerTag
-        let leftButtonTapRecognizer: UILongPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleButtonLongPress(recognizer:)))
-        leftButton.addGestureRecognizer(leftButtonTapRecognizer)
-        
-        let rightButton = modifiedButton(position: .right)
-        rightButton.frame = CGRect(x: rightPoint.x - 15, y: leftPoint.y - 15, width: 30, height: 30)
-        self.addSubview(rightButton)
-        rightButton.clipsToBounds = true
-        rightButton.backgroundColor = .red
-        rightButton.layer.cornerRadius = 30/2
-        rightButton.alpha = 0.3
-        rightButton.layer.cornerRadius = 30/2
-        rightButton.tag = rulerTag
-        let rightButtonTapRecognizer: UILongPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleButtonLongPress(recognizer:)))
-        rightButton.addGestureRecognizer(rightButtonTapRecognizer)
+        let distanceBetweenLeftAndRight = distanceFromTwoPoints(leftPoint, rightPoint)
+        let leftButton = drawButton(buttonPoint: leftPoint, unitButtonWidth: 0, rulerTag: globalTag, position: .left)
+        let rightButton = drawButton(buttonPoint: rightPoint, unitButtonWidth: 0, rulerTag: globalTag, position: .right)
+        let unitButton = drawButton(buttonPoint: leftPoint, unitButtonWidth: distanceBetweenLeftAndRight, rulerTag: globalTag, position: .unitText)
         globalTag += 1
         
-        let midPath = drawALine(point1: leftPoint, point2: rightPoint)
-        let leftPath = drawALine(point1: upperPointOfLeftStraightLine, point2: lowerPointOfLeftStraightLine)
-        let rightPath = drawALine(point1: upperPointOfRightStraightLine, point2: lowerPointOfRightStraightLine)
-        let rulerModel = RulerBelzierModel(ID: rulerTag, leftPoint: leftPoint, rightPoint: rightPoint, midPath: midPath, leftPath: leftPath, rightPath: rightPath, upPointLeft: upperPointOfLeftStraightLine, lowPointLeft: lowerPointOfLeftStraightLine, upPointRight: upperPointOfRightStraightLine, lowPointRight: lowerPointOfRightStraightLine)
+        let midPath = drawALine(point1: leftPoint, point2: rightPoint, angle: angle)
+        let leftPath = drawALine(point1: upperPointOfLeftStraightLine, point2: lowerPointOfLeftStraightLine, angle: angle)
+        let rightPath = drawALine(point1: upperPointOfRightStraightLine, point2: lowerPointOfRightStraightLine, angle: angle)
+        let rulerModel = RulerBelzierModel(ID: rulerTag, leftPoint: leftPoint, rightPoint: rightPoint, midPath: midPath, leftPath: leftPath, rightPath: rightPath, upPointLeft: upperPointOfLeftStraightLine, lowPointLeft: lowerPointOfLeftStraightLine, upPointRight: upperPointOfRightStraightLine, lowPointRight: lowerPointOfRightStraightLine, leftButton: leftButton, rightButton: rightButton, angle: 0.0, unitValue: Float(unitValue), unitButton: unitButton)
         RulerModelArray.append(rulerModel)
+    }
+    
+    func drawButton(buttonPoint:CGPoint, unitButtonWidth:CGFloat, rulerTag:Int, position:modifiedButton.positionEnum)->modifiedButton{
+        let button = modifiedButton(position: position)
+        if position == .left || position == .right{
+            button.frame =  CGRect(x: buttonPoint.x - 15, y: buttonPoint.y - 15, width: 30, height: 30)
+            self.addSubview(button)
+            button.clipsToBounds = true
+            button.backgroundColor = .red
+            button.layer.cornerRadius = 30/2
+            button.alpha = 0.3
+            button.layer.cornerRadius = 30/2
+            button.tag = rulerTag
+            let buttonGes: UILongPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleButtonLongPress(recognizer:)))
+            button.addGestureRecognizer(buttonGes)
+        }
+        else if position == .unitText{
+            button.frame =  CGRect(x: buttonPoint.x, y: buttonPoint.y, width: unitButtonWidth, height: 30)
+            self.addSubview(button)
+            var buttonTxt = "asdf"
+            if DrawingUIViewByBelzier.unitButtonValue == "0"{
+                buttonTxt = "Adjust measure"
+            }else{
+                buttonTxt = String(DrawingUIViewByBelzier.unitButtonValue )
+            }
+            
+            button.setTitle(buttonTxt, for: .normal)
+            button.titleLabel?.textAlignment = .center
+            button.setTitleColor(.red, for: .normal)
+            button.titleLabel?.font = .boldSystemFont(ofSize: 16)
+            button.backgroundColor = UIColor.yellow
+            button.addTarget(self, action: #selector(changeMeasureUnit(sender:)), for: .touchDown)
+            
+        }
+        return button
+      
+    }
+    
+
+    func drawTempUnitButton(buttonPoint:CGPoint, unitButtonWidth:CGFloat, anchorPoint:CGPoint, angle:CGFloat, button:UIButton, unitValue:CGFloat){
+        self.addSubview(button)
+        button.frame =  CGRect(x: buttonPoint.x, y: buttonPoint.y, width: unitButtonWidth, height: 30)
+        let floatUnitValue = Float(unitValue)
+        let buttonTxt = String(floatUnitValue)
+        button.setTitle(buttonTxt, for: .normal)
+        button.titleLabel?.textAlignment = .center
+        button.setTitleColor(.red, for: .normal)
+        button.titleLabel?.font = .boldSystemFont(ofSize: 16)
+        button.backgroundColor = UIColor.yellow
+        button.setAnchorPoint(anchorPoint)
+        let transform = CGAffineTransform(rotationAngle: angle)
+        button.transform = transform
+
+    }
+    
+    @objc func changeMeasureUnit(sender:UIButton){
+        let alert = UIAlertController(title: "Set floor plan scale", message: "Note: to set GPS coordinates, select the ruler and tap on the end points", preferredStyle: .alert)
+               alert.addTextField { (textField) in
+                   textField.placeholder = "Inpzut ruler length (ft)"
+            
+               }
+        alert.addAction(UIAlertAction(title: "Scale Plane", style: .cancel, handler: { [weak alert] (_) in
+            if let textField = alert?.textFields?[0]{
+                sender.setTitle(textField.text, for: .normal)
+                DrawingUIViewByBelzier.unitButtonValue = String(textField.text!)
+                self.setNeedsDisplay()
+            }else{
+                return
+            }
+        }))
         
+        alert.addAction(UIAlertAction(title: "Cancle", style: .default, handler: .none))
+
+
+        self.window?.rootViewController?.present(alert, animated: false, completion: nil)
         
     }
     
-    func drawALine(point1:CGPoint,point2:CGPoint)->CAShapeLayer{
+    func drawALine(point1:CGPoint,point2:CGPoint,angle: CGFloat)->CAShapeLayer{
         let path = UIBezierPath()
         path.move(to: point1)
         path.addLine(to: point2)
+        path.rotate(path: path, angle: angle)
         let shapeLayer = CAShapeLayer()
         shapeLayer.path = path.cgPath
         shapeLayer.strokeColor = UIColor.red.cgColor
@@ -202,10 +315,11 @@ extension DrawingUIViewByBelzier{
         self.layer.addSublayer(shapeLayer)
         return shapeLayer
     }
-    func drawTempLine(point1:CGPoint,point2:CGPoint, tempCAShapeLayer:CAShapeLayer){
+    func drawTempLine(point1:CGPoint,point2:CGPoint, tempCAShapeLayer:CAShapeLayer, angle:CGFloat){
         let path = UIBezierPath()
         path.move(to: point1)
         path.addLine(to: point2)
+        path.rotate(path: path, angle: angle)
         tempCAShapeLayer.path = path.cgPath
         tempCAShapeLayer.strokeColor = UIColor.red.cgColor
         tempCAShapeLayer.lineWidth = 10
