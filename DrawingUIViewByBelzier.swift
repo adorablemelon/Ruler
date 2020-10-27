@@ -129,6 +129,8 @@ class DrawingUIViewByBelzier: UIView {
         var tempAngle = CGFloat(0)
         switch recognizer.state {
         case .began:
+            button.shake()
+
             button.center = touchPoint
             RulerModelArray[rulerID].removePath()
             RulerModelArray[rulerID].removeButton()
@@ -274,7 +276,6 @@ extension DrawingUIViewByBelzier{
             button.tag = rulerTag
             let buttonGes: UILongPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleButtonLongPress(recognizer:)))
             button.addGestureRecognizer(buttonGes)
-            
         }
         else if position == .unitText{
             button.frame =  CGRect(x: buttonPoint.x, y: buttonPoint.y + 5, width: unitButtonWidth, height: 30)
