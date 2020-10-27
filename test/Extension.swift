@@ -48,11 +48,7 @@ extension UIView{
         middle.y = (a.y + b.y) / 2
         return middle
     }
-    func pToAx(point:CGPoint) -> CGFloat {
-        let loc = point
-        let c = self.convert(self.center, from:self.superview!)
-        return atan2(loc.y - c.y, loc.x - c.x)
-    }
+ 
     
     func setAnchorPoint(_ point: CGPoint) {
             var newPoint = CGPoint(x: bounds.size.width * point.x, y: bounds.size.height * point.y)

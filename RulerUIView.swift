@@ -160,8 +160,6 @@ class RulerUIView: UIView {
         //stage changed
         if panStretchRecognizerRight.state == .changed{
             //rotate
-            self.initialAngle = pToA(point: touchPoint)
-
             let ang = pToA(point: touchPoint) - self.initialAngle
             let absoluteAngle = self.angle + ang
             let transform = self.transform.rotated(by: ang)

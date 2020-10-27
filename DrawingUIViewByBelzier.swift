@@ -58,7 +58,7 @@ class DrawingUIViewByBelzier: UIView {
     var tempLeftCAShapeLayer = CAShapeLayer()
     var tempUnitButton = UIButton()
     var isRightButton:Bool = false
-    
+    var valuePerUnit:Float?
     
     var originalLeftPointMove:CGPoint = .zero
     var originalRightPointMove:CGPoint = .zero
@@ -116,6 +116,7 @@ class DrawingUIViewByBelzier: UIView {
     var originalUnitButtonCenter:CGPoint = .zero // use to rotate button
     var initialAngle = CGFloat(0) //use to rotate button
     var angle = CGFloat(0) // use to rotate button
+    var currentAnglePoint:CGPoint = .zero
     @objc func handleButtonLongPress(recognizer: UIGestureRecognizer) {
         let touchPoint = recognizer.location(in: self)
         guard let button = recognizer.view as? modifiedButton else { return }
@@ -131,8 +132,12 @@ class DrawingUIViewByBelzier: UIView {
             drawTempLine(point1: nailPoint, point2: touchPoint, tempCAShapeLayer: tempPathCAShapeLayer, angle: 0) // MIDDLE LINE
             drawTempLine(point1: CGPoint(x: nailPoint.x, y: nailPoint.y + 10), point2: CGPoint(x: nailPoint.x, y: nailPoint.y - 10), tempCAShapeLayer: tempRightCAShapeLayer, angle: originalAngle)
             drawTempLine(point1: CGPoint(x: button.center.x, y: button.center.y + 10), point2: CGPoint(x: button.center.x, y: button.center.y - 10), tempCAShapeLayer: tempLeftCAShapeLayer, angle: originalAngle)
-//            RulerModelArray[rulerID].unitButton.setAnchorPoint(CGPoint(x: 0, y: 0.5))
-//            originalUnitButtonCenter = RulerModelArray[rulerID].unitButton.center
+            if button.position == .left{
+                currentAnglePoint = CGPoint(x: 1, y: 0.5)
+            }
+            if button.position == . right{
+                currentAnglePoint = CGPoint(x: 0, y: 0.5)
+            }
             buttonCenter = button.center
             
         case .changed:
@@ -143,14 +148,14 @@ class DrawingUIViewByBelzier: UIView {
             drawTempLine(point1: CGPoint(x: button.center.x, y: button.center.y + 10), point2: CGPoint(x: button.center.x, y: button.center.y - 10), tempCAShapeLayer: tempLeftCAShapeLayer, angle: tempAngle)
             changedAngle = tempAngle
             let distance = distanceFromTwoPoints(nailPoint, touchPoint)
-            let anchorPoint = CGPoint(x: 0, y: 0.5)
-            drawTempUnitButton(buttonPoint: nailPoint, unitButtonWidth: distance, anchorPoint: anchorPoint, angle: tempAngle, button: tempUnitButton, unitValue: distance)
+            drawTempUnitButton(buttonPoint: nailPoint, unitButtonWidth: distance, anchorPoint: currentAnglePoint, angle: tempAngle, button: tempUnitButton, unitValue: distance)
         case .ended:
             let position = touchedButtonPosition(position: button.position)
-            substituteRulerAfterStretch(ID: rulerID, positionOfMovedButton: position, newPosition: touchPoint, angle: changedAngle)
+            substituteRulerAfterStretch(ID: rulerID, positionOfMovedButton: position, newPosition: touchPoint, angle: changedAngle, anglePoint: currentAnglePoint, anchorPoint: currentAnglePoint)
             tempLeftCAShapeLayer.removeFromSuperlayer()
             tempRightCAShapeLayer.removeFromSuperlayer()
             tempPathCAShapeLayer.removeFromSuperlayer()
+            tempUnitButton.removeFromSuperview()
         default: print("default")
             break
         }
@@ -158,14 +163,16 @@ class DrawingUIViewByBelzier: UIView {
 }
 
 extension DrawingUIViewByBelzier{
-    func substituteRulerAfterStretch(ID:Int,positionOfMovedButton:String, newPosition:CGPoint, angle:CGFloat ){
+    func substituteRulerAfterStretch(ID:Int,positionOfMovedButton:String, newPosition:CGPoint, angle:CGFloat,anglePoint:CGPoint, anchorPoint:CGPoint){
         let newLine = drawALine(point1: nailPoint, point2: newPosition, angle: 0) // middle line
         let rightNewLine = drawALine(point1: CGPoint(x: nailPoint.x, y: nailPoint.y + 10), point2: CGPoint(x: nailPoint.x, y: nailPoint.y - 10), angle: angle)
         let leftNewLine = drawALine(point1: CGPoint(x: newPosition.x, y: newPosition.y + 10), point2: CGPoint(x: newPosition.x, y: newPosition.y - 10), angle: angle)
+        let newUnitButton = drawButton(buttonPoint: nailPoint, unitButtonWidth: distanceFromTwoPoints(nailPoint, newPosition), rulerTag: ID, position: .unitText, angle: angle, anchorPoint: anchorPoint)
         RulerModelArray[ID].midPath = newLine
         RulerModelArray[ID].leftPath = leftNewLine
         RulerModelArray[ID].rightPath = rightNewLine
         RulerModelArray[ID].angle = angle
+        RulerModelArray[ID].unitButton = newUnitButton
         if positionOfMovedButton == "Left"{
             print("left")
             RulerModelArray[ID].leftPoint = newPosition
@@ -215,9 +222,9 @@ extension DrawingUIViewByBelzier{
         let upperPointOfRightStraightLine = CGPoint(x: rightPoint.x, y: rightPoint.y + 10)
         let lowerPointOfRightStraightLine = CGPoint(x: rightPoint.x, y: rightPoint.y - 10)
         let distanceBetweenLeftAndRight = distanceFromTwoPoints(leftPoint, rightPoint)
-        let leftButton = drawButton(buttonPoint: leftPoint, unitButtonWidth: 0, rulerTag: globalTag, position: .left)
-        let rightButton = drawButton(buttonPoint: rightPoint, unitButtonWidth: 0, rulerTag: globalTag, position: .right)
-        let unitButton = drawButton(buttonPoint: leftPoint, unitButtonWidth: distanceBetweenLeftAndRight, rulerTag: globalTag, position: .unitText)
+        let leftButton = drawButton(buttonPoint: leftPoint, unitButtonWidth: 0, rulerTag: globalTag, position: .left, angle: 0,anchorPoint: .zero)
+        let rightButton = drawButton(buttonPoint: rightPoint, unitButtonWidth: 0, rulerTag: globalTag, position: .right, angle: 0, anchorPoint: .zero)
+        let unitButton = drawButton(buttonPoint: leftPoint, unitButtonWidth: distanceBetweenLeftAndRight, rulerTag: globalTag, position: .unitText,angle: 0,anchorPoint: .zero)
         globalTag += 1
         
         let midPath = drawALine(point1: leftPoint, point2: rightPoint, angle: angle)
@@ -227,7 +234,7 @@ extension DrawingUIViewByBelzier{
         RulerModelArray.append(rulerModel)
     }
     
-    func drawButton(buttonPoint:CGPoint, unitButtonWidth:CGFloat, rulerTag:Int, position:modifiedButton.positionEnum)->modifiedButton{
+    func drawButton(buttonPoint:CGPoint, unitButtonWidth:CGFloat, rulerTag:Int, position:modifiedButton.positionEnum,angle:CGFloat, anchorPoint:CGPoint)->modifiedButton{
         let button = modifiedButton(position: position)
         if position == .left || position == .right{
             button.frame =  CGRect(x: buttonPoint.x - 15, y: buttonPoint.y - 15, width: 30, height: 30)
@@ -240,9 +247,10 @@ extension DrawingUIViewByBelzier{
             button.tag = rulerTag
             let buttonGes: UILongPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleButtonLongPress(recognizer:)))
             button.addGestureRecognizer(buttonGes)
+            
         }
         else if position == .unitText{
-            button.frame =  CGRect(x: buttonPoint.x, y: buttonPoint.y, width: unitButtonWidth, height: 30)
+            button.frame =  CGRect(x: buttonPoint.x, y: buttonPoint.y + 10, width: unitButtonWidth, height: 30)
             self.addSubview(button)
             var buttonTxt = "asdf"
             if DrawingUIViewByBelzier.unitButtonValue == "0"{
@@ -257,6 +265,9 @@ extension DrawingUIViewByBelzier{
             button.titleLabel?.font = .boldSystemFont(ofSize: 16)
             button.backgroundColor = UIColor.yellow
             button.addTarget(self, action: #selector(changeMeasureUnit(sender:)), for: .touchDown)
+            button.setAnchorPoint(anchorPoint)
+            let transform = CGAffineTransform(rotationAngle: angle)
+            button.transform = transform
             
         }
         return button
@@ -266,7 +277,7 @@ extension DrawingUIViewByBelzier{
 
     func drawTempUnitButton(buttonPoint:CGPoint, unitButtonWidth:CGFloat, anchorPoint:CGPoint, angle:CGFloat, button:UIButton, unitValue:CGFloat){
         self.addSubview(button)
-        button.frame =  CGRect(x: buttonPoint.x, y: buttonPoint.y, width: unitButtonWidth, height: 30)
+        button.frame =  CGRect(x: buttonPoint.x, y: buttonPoint.y + 10, width: unitButtonWidth, height: 30)
         let floatUnitValue = Float(unitValue)
         let buttonTxt = String(floatUnitValue)
         button.setTitle(buttonTxt, for: .normal)
@@ -277,7 +288,6 @@ extension DrawingUIViewByBelzier{
         button.setAnchorPoint(anchorPoint)
         let transform = CGAffineTransform(rotationAngle: angle)
         button.transform = transform
-
     }
     
     @objc func changeMeasureUnit(sender:UIButton){
@@ -289,7 +299,14 @@ extension DrawingUIViewByBelzier{
         alert.addAction(UIAlertAction(title: "Scale Plane", style: .cancel, handler: { [weak alert] (_) in
             if let textField = alert?.textFields?[0]{
                 sender.setTitle(textField.text, for: .normal)
+                let text = textField.text!
+                let textInt = Float(text)
+                let a = self.RulerModelArray[sender.tag].leftPoint
+                let b = self.RulerModelArray[sender.tag].rightPoint
+                let distance = Float(self.distanceFromTwoPoints(a, b))
+                self.valuePerUnit = Float(distance/textInt!)
                 DrawingUIViewByBelzier.unitButtonValue = String(textField.text!)
+                
                 self.setNeedsDisplay()
             }else{
                 return
