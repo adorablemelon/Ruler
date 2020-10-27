@@ -47,7 +47,6 @@ struct RulerBelzierModel {
         self.midPath.removeFromSuperlayer()
         self.leftPath.removeFromSuperlayer()
         self.rightPath.removeFromSuperlayer()
-        print("removed ruler ID \(ID):\(self.midPath)")
     }
     func removeButton(){
         self.unitButton.removeFromSuperview()

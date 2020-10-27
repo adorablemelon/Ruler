@@ -30,8 +30,8 @@
             filePath = "DrawingUIViewByBelzier.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "101"
-            endingLineNumber = "101"
+            startingLineNumber = "103"
+            endingLineNumber = "103"
             landmarkName = "handlePanGesture(recognizer:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -46,8 +46,8 @@
             filePath = "DrawingUIViewByBelzier.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "236"
-            endingLineNumber = "236"
+            startingLineNumber = "263"
+            endingLineNumber = "263"
             landmarkName = "DrawingUIViewByBelzier"
             landmarkType = "21">
          </BreakpointContent>
@@ -62,9 +62,25 @@
             filePath = "DrawingUIViewByBelzier.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "253"
-            endingLineNumber = "253"
+            startingLineNumber = "280"
+            endingLineNumber = "280"
             landmarkName = "drawButton(buttonPoint:unitButtonWidth:rulerTag:position:angle:anchorPoint:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "6EA2C2BA-B49C-4C24-8A4E-1A2B9496F1A2"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DrawingUIViewByBelzier.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "323"
+            endingLineNumber = "323"
+            landmarkName = "drawTempUnitButton(buttonPoint:unitButtonWidth:anchorPoint:angle:button:unitValue:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
